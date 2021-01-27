@@ -29,8 +29,8 @@ import (
 	"magma/orc8r/cloud/go/pluginimpl"
 	configurator_test_init "magma/orc8r/cloud/go/services/configurator/test_init"
 	device_test_init "magma/orc8r/cloud/go/services/device/test_init"
+	"magma/orc8r/cloud/go/services/service_registry"
 	orcprotos "magma/orc8r/lib/go/protos"
-	"magma/orc8r/lib/go/registry"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -203,7 +203,7 @@ func updateHealth(t *testing.T, req *protos.HealthRequest) (*protos.HealthRespon
 	if req == nil {
 		return nil, fmt.Errorf("Nil HealthRequest")
 	}
-	conn, err := registry.GetConnection(health.ServiceName)
+	conn, err := service_registry.GetConnection(health.ServiceName)
 	assert.NoError(t, err)
 
 	client := protos.NewHealthClient(conn)

@@ -21,11 +21,12 @@ import (
 	"flag"
 	"fmt"
 	"net"
+	"testing"
 
 	"magma/orc8r/cloud/go/plugin"
 	"magma/orc8r/cloud/go/service/middleware/unary"
+	service_registry "magma/orc8r/cloud/go/services/service_registry"
 	"magma/orc8r/lib/go/protos"
-	"magma/orc8r/lib/go/registry"
 	platform_service "magma/orc8r/lib/go/service"
 
 	"github.com/golang/glog"
@@ -65,7 +66,7 @@ func NewOrchestratorService(moduleName string, serviceName string, serverOptions
 	flag.Parse()
 	plugin.LoadAllPluginsFatalOnError(&plugin.DefaultOrchestratorPluginLoader{})
 
-	err := registry.PopulateServices()
+	err := service_registry.PopulateServices()
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +77,12 @@ func NewOrchestratorService(moduleName string, serviceName string, serverOptions
 		return nil, err
 	}
 
-	echoSrv, err := getEchoServerForOrchestratorService(serviceName)
+	echoPort, err := service_registry.GetHTTPServerPort(serviceName)
+	if err != nil {
+		return nil, err
+	}
+
+	echoSrv, err := getEchoServer(echoPort)
 	if err != nil {
 		return nil, err
 	}
@@ -89,12 +95,18 @@ func NewOrchestratorService(moduleName string, serviceName string, serverOptions
 // stopped. If the HTTP server is nil, only the gRPC server is run, blocking
 // until its interrupted by a signal or until the gRPC server is stopped.
 func (s *OrchestratorService) Run() error {
-	if s.EchoServer == nil {
-		return s.Service.Run()
+	port, err := service_registry.GetPort(s.Type)
+	if err != nil {
+		return err
 	}
-	serverErr := make(chan error, 1)
+
+	if s.EchoServer == nil {
+		return s.Service.RunWithPort(port)
+	}
+
+	serverErr := make(chan error)
 	go func() {
-		err := s.Service.Run()
+		err := s.Service.RunWithPort(port)
 		shutdownErr := s.EchoServer.Shutdown(context.Background())
 		if shutdownErr != nil {
 			glog.Errorf("Error shutting down echo server: %v", shutdownErr)
@@ -115,12 +127,13 @@ func (s *OrchestratorService) Run() error {
 // RunTest runs the test service on a given Listener and the HTTP on it's
 // configured addr if exists. This function blocks by a signal or until a
 // server is stopped.
-func (s *OrchestratorService) RunTest(lis net.Listener) {
-	s.State = protos.ServiceInfo_ALIVE
-	s.Health = protos.ServiceInfo_APP_HEALTHY
-	serverErr := make(chan error, 1)
+func (s *OrchestratorService) RunTest(t *testing.T, lis net.Listener) {
+	if t == nil {
+		panic("for tests only")
+	}
+	serverErr := make(chan error)
 	go func() {
-		err := s.GrpcServer.Serve(lis)
+		err := s.Service.RunTest(t, lis)
 		serverErr <- err
 	}()
 	if s.EchoServer != nil {
@@ -131,21 +144,17 @@ func (s *OrchestratorService) RunTest(lis net.Listener) {
 	}
 	err := <-serverErr
 	if err != nil {
-		glog.Fatal(err)
+		t.Fatal(err)
 	}
 }
 
-func getEchoServerForOrchestratorService(serviceName string) (*echo.Echo, error) {
+// getEchoServer returns an echo HTTP server at the specified port.
+func getEchoServer(port int) (*echo.Echo, error) {
 	if !runEchoServer {
 		return nil, nil
 	}
-	echoPort, err := registry.GetEchoServerPort(serviceName)
-	if err != nil {
-		return nil, err
-	}
-	portStr := fmt.Sprintf(":%d", echoPort)
 	e := echo.New()
-	e.Server.Addr = portStr
 	e.HideBanner = true
+	e.Server.Addr = fmt.Sprintf(":%d", port)
 	return e, nil
 }

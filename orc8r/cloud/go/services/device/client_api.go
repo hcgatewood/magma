@@ -18,9 +18,9 @@ import (
 
 	"magma/orc8r/cloud/go/serde"
 	"magma/orc8r/cloud/go/services/device/protos"
+	"magma/orc8r/cloud/go/services/service_registry"
 	"magma/orc8r/cloud/go/storage"
 	merrors "magma/orc8r/lib/go/errors"
-	"magma/orc8r/lib/go/registry"
 
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
@@ -163,7 +163,7 @@ func getDevice(networkID, deviceType, deviceKey string) (*protos.PhysicalEntity,
 }
 
 func getDeviceClient() (protos.DeviceClient, error) {
-	conn, err := registry.GetConnection(ServiceName)
+	conn, err := service_registry.GetConnection(ServiceName)
 	if err != nil {
 		initErr := merrors.NewInitError(err, ServiceName)
 		glog.Error(initErr)

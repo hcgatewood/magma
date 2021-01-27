@@ -19,12 +19,13 @@ import (
 
 	"magma/orc8r/cloud/go/blobstore"
 	"magma/orc8r/cloud/go/orc8r"
+	"magma/orc8r/cloud/go/service/test"
 	"magma/orc8r/cloud/go/services/state"
 	"magma/orc8r/cloud/go/services/state/indexer/reindex"
 	indexer_protos "magma/orc8r/cloud/go/services/state/protos"
 	"magma/orc8r/cloud/go/services/state/servicers"
 	"magma/orc8r/cloud/go/sqorc"
-	"magma/orc8r/cloud/go/test_utils"
+	sqorc_test "magma/orc8r/cloud/go/sqorc/test"
 	"magma/orc8r/lib/go/protos"
 
 	"github.com/stretchr/testify/require"
@@ -45,12 +46,12 @@ func StartTestService(t *testing.T) {
 // the derived reindexer and job queue for internal usage.
 // Supported drivers include: postgres.
 func StartTestServiceInternal(t *testing.T, dbName, dbDriver string) (reindex.Reindexer, reindex.JobQueue) {
-	db := sqorc.OpenCleanForTest(t, dbName, dbDriver)
+	db := sqorc_test.OpenCleanForTest(t, dbName, dbDriver)
 	return startService(t, db)
 }
 
 func startService(t *testing.T, db *sql.DB) (reindex.Reindexer, reindex.JobQueue) {
-	srv, lis := test_utils.NewTestService(t, orc8r.ModuleName, state.ServiceName)
+	srv, lis := test.NewService(t, orc8r.ModuleName, state.ServiceName)
 
 	factory := blobstore.NewSQLBlobStorageFactory(state.DBTableName, db, sqorc.GetSqlBuilder())
 	require.NoError(t, factory.InitializeFactory())
@@ -64,6 +65,6 @@ func startService(t *testing.T, db *sql.DB) (reindex.Reindexer, reindex.JobQueue
 	indexerServicer := servicers.NewIndexerManagerServicer(reindexer, false)
 	indexer_protos.RegisterIndexerManagerServer(srv.GrpcServer, indexerServicer)
 
-	go srv.RunTest(lis)
+	go srv.MustRunTest(t, lis)
 	return reindexer, queue
 }

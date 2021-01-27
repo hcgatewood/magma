@@ -14,28 +14,27 @@
 package unary_test
 
 import (
-	"net"
 	"testing"
 	"time"
-
-	"magma/orc8r/cloud/go/orc8r"
-	"magma/orc8r/cloud/go/serde"
-	"magma/orc8r/cloud/go/serdes"
-	"magma/orc8r/cloud/go/service"
-	"magma/orc8r/cloud/go/service/middleware/unary/test_utils"
-	"magma/orc8r/cloud/go/services/configurator"
-	configuratorTestInit "magma/orc8r/cloud/go/services/configurator/test_init"
-	configuratorTestUtils "magma/orc8r/cloud/go/services/configurator/test_utils"
-	deviceTestInit "magma/orc8r/cloud/go/services/device/test_init"
-	"magma/orc8r/cloud/go/services/orchestrator/obsidian/models"
-	"magma/orc8r/cloud/go/services/state"
-	"magma/orc8r/lib/go/protos"
-	"magma/orc8r/lib/go/registry"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/metadata"
+
+	"magma/orc8r/cloud/go/orc8r"
+	"magma/orc8r/cloud/go/serde"
+	"magma/orc8r/cloud/go/serdes"
+	"magma/orc8r/cloud/go/service/middleware/unary/test_utils"
+	"magma/orc8r/cloud/go/service/test"
+	"magma/orc8r/cloud/go/services/configurator"
+	configuratorTestInit "magma/orc8r/cloud/go/services/configurator/test_init"
+	configuratorTestUtils "magma/orc8r/cloud/go/services/configurator/test_utils"
+	deviceTestInit "magma/orc8r/cloud/go/services/device/test_init"
+	"magma/orc8r/cloud/go/services/orchestrator/obsidian/models"
+	"magma/orc8r/cloud/go/services/service_registry"
+	"magma/orc8r/cloud/go/services/state"
+	"magma/orc8r/lib/go/protos"
 )
 
 const testAgHwID = "Test-AGW-Hw-Id"
@@ -50,8 +49,7 @@ func NewTestStateServer() (*testStateServer, error) {
 }
 
 func (srv *testStateServer) GetStates(ctx context.Context, req *protos.GetStatesRequest) (*protos.GetStatesResponse, error) {
-	srv.lastClientIdentity =
-		proto.Clone(protos.GetClientIdentity(ctx)).(*protos.Identity)
+	srv.lastClientIdentity = proto.Clone(protos.GetClientIdentity(ctx)).(*protos.Identity)
 	return nil, nil
 }
 
@@ -62,8 +60,7 @@ func (srv *testStateServer) ReportStates(ctx context.Context, req *protos.Report
 }
 
 func (srv *testStateServer) DeleteStates(ctx context.Context, req *protos.DeleteStatesRequest) (*protos.Void, error) {
-	srv.lastClientIdentity =
-		proto.Clone(protos.GetClientIdentity(ctx)).(*protos.Identity)
+	srv.lastClientIdentity = proto.Clone(protos.GetClientIdentity(ctx)).(*protos.Identity)
 	return &protos.Void{}, nil
 }
 
@@ -81,22 +78,16 @@ func TestIdentityInjector(t *testing.T) {
 	configuratorTestUtils.RegisterNetwork(t, networkID, "Identity Decorator Test")
 	configuratorTestUtils.RegisterGateway(t, networkID, testAgHwID, &models.GatewayDevice{HardwareID: testAgHwID})
 
-	// Create the service
-	srv, err := service.NewTestOrchestratorService(t, orc8r.ModuleName, state.ServiceName)
-	assert.NoError(t, err)
+	srv, lis := test.NewOrchestratorService(t, orc8r.ModuleName, state.ServiceName, nil, nil)
 
 	// Add servicers to the service
 	stateServer, err := NewTestStateServer()
 	assert.NoError(t, err)
 	protos.RegisterStateServiceServer(srv.GrpcServer, stateServer)
 
-	l, err := net.Listen("tcp", "")
-	assert.NoError(t, err)
-	addr := l.Addr().String()
-	// Run the service
-	go srv.RunTest(l)
+	go srv.RunTest(t, lis)
 
-	conn, err := registry.GetClientConnection(context.Background(), addr)
+	conn := service_registry.GetGatewayConnectionForTest(t, state.ServiceName)
 	assert.NoError(t, err)
 	stateClient := protos.NewStateServiceClient(conn)
 	csn := test_utils.StartMockGwAccessControl(t, []string{testAgHwID})

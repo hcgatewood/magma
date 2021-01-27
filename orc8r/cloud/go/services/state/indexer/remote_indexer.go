@@ -17,10 +17,10 @@ import (
 	"context"
 	"strings"
 
+	"magma/orc8r/cloud/go/services/service_registry"
 	state_protos "magma/orc8r/cloud/go/services/state/protos"
 	state_types "magma/orc8r/cloud/go/services/state/types"
 	merrors "magma/orc8r/lib/go/errors"
-	"magma/orc8r/lib/go/registry"
 
 	"github.com/golang/glog"
 )
@@ -114,7 +114,7 @@ func (r *remoteIndexer) Index(networkID string, states state_types.SerializedSta
 }
 
 func (r *remoteIndexer) getIndexerClient() (state_protos.IndexerClient, error) {
-	conn, err := registry.GetConnection(r.service)
+	conn, err := service_registry.GetConnection(r.service)
 	if err != nil {
 		initErr := merrors.NewInitError(err, r.service)
 		glog.Error(initErr)

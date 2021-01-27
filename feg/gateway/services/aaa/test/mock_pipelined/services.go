@@ -23,7 +23,7 @@ import (
 
 	"magma/feg/gateway/registry"
 	"magma/lte/cloud/go/protos"
-	"magma/orc8r/cloud/go/test_utils"
+	"magma/orc8r/cloud/go/service/test"
 )
 
 // mock_pipelined stores all the messages received and sent on the Actions slice
@@ -51,12 +51,12 @@ type MockPipelined struct {
 }
 
 func NewRunningPipelined(t *testing.T) *MockPipelined {
-	srv, lis := test_utils.NewTestService(t, registry.ModuleName, registry.PIPELINED)
+	srv, lis := test.NewService(t, registry.ModuleName, registry.PIPELINED)
 	service := &MockPipelined{
 		Actions: make([]*Action, 0),
 	}
 	protos.RegisterPipelinedServer(srv.GrpcServer, service)
-	go srv.RunTest(lis)
+	go srv.MustRunTest(t, lis)
 	return service
 }
 

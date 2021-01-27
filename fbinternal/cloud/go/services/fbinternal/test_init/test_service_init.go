@@ -20,8 +20,8 @@ import (
 	"magma/fbinternal/cloud/go/services/fbinternal"
 	"magma/fbinternal/cloud/go/services/fbinternal/servicers"
 	"magma/orc8r/cloud/go/orc8r"
+	"magma/orc8r/cloud/go/service/test"
 	"magma/orc8r/cloud/go/services/metricsd/protos"
-	"magma/orc8r/cloud/go/test_utils"
 )
 
 func StartTestService(t *testing.T) {
@@ -38,7 +38,7 @@ func StartTestService(t *testing.T) {
 }
 
 func StartTestServiceInternal(t *testing.T, exporter protos.MetricsExporterServer) {
-	srv, lis := test_utils.NewTestService(t, orc8r.ModuleName, fbinternal.ServiceName)
+	srv, lis := test.NewService(t, orc8r.ModuleName, fbinternal.ServiceName)
 	protos.RegisterMetricsExporterServer(srv.GrpcServer, exporter)
-	go srv.RunTest(lis)
+	go srv.MustRunTest(t, lis)
 }

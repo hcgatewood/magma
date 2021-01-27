@@ -11,10 +11,12 @@
  limitations under the License.
 */
 
-package registry
+package service_registry
 
 import (
 	"testing"
+
+	"magma/orc8r/lib/go/registry"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -58,12 +60,13 @@ func TestServiceRegistry_GetAnnotationFields(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := &ServiceRegistry{
-				ServiceLocations: map[string]ServiceLocation{
-					"srv": {Annotations: map[string]string{"annotationName": tt.annotationValue}},
-				},
+			r := NewYAMLRegistry()
+			location := registry.ServiceLocation{
+				Name:        "srv",
+				Annotations: map[string]string{"annotationName": tt.annotationValue},
 			}
-			got, err := r.GetAnnotationList("srv", "annotationName")
+			r.AddServices(location)
+			got, err := GetAnnotationListFromRegistry(r, "srv", "annotationName")
 			assert.NoError(t, err)
 			assert.Equal(t, tt.want, got)
 		})

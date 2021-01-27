@@ -17,19 +17,19 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"magma/lte/cloud/go/lte"
 	lte_service "magma/lte/cloud/go/services/lte"
 	lte_protos "magma/lte/cloud/go/services/lte/protos"
 	"magma/lte/cloud/go/services/lte/servicers"
 	"magma/lte/cloud/go/services/lte/storage"
 	"magma/orc8r/cloud/go/orc8r"
+	"magma/orc8r/cloud/go/service/test"
 	builder_protos "magma/orc8r/cloud/go/services/configurator/mconfig/protos"
 	state_protos "magma/orc8r/cloud/go/services/state/protos"
 	provider_protos "magma/orc8r/cloud/go/services/streamer/protos"
 	"magma/orc8r/cloud/go/sqorc"
-	"magma/orc8r/cloud/go/test_utils"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func StartTestService(t *testing.T) {
@@ -49,7 +49,7 @@ func StartTestService(t *testing.T) {
 		orc8r.StreamProviderStreamsAnnotation: strings.Join(streams, orc8r.AnnotationFieldSeparator),
 	}
 
-	srv, lis := test_utils.NewTestOrchestratorService(t, lte.ModuleName, lte_service.ServiceName, labels, annotations)
+	srv, lis := test.NewOrchestratorService(t, lte.ModuleName, lte_service.ServiceName, labels, annotations)
 	builder_protos.RegisterMconfigBuilderServer(srv.GrpcServer, servicers.NewBuilderServicer())
 	provider_protos.RegisterStreamProviderServer(srv.GrpcServer, servicers.NewProviderServicer())
 
@@ -63,5 +63,5 @@ func StartTestService(t *testing.T) {
 	lte_protos.RegisterEnodebStateLookupServer(srv.GrpcServer, servicers.NewLookupServicer(enbStateStore))
 	state_protos.RegisterIndexerServer(srv.GrpcServer, servicers.NewIndexerServicer())
 
-	go srv.RunTest(lis)
+	go srv.RunTest(t, lis)
 }

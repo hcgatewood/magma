@@ -19,10 +19,10 @@ import (
 	"time"
 
 	"magma/orc8r/cloud/go/orc8r"
+	"magma/orc8r/cloud/go/service/test"
+	"magma/orc8r/cloud/go/services/service_registry"
 	"magma/orc8r/cloud/go/services/state"
-	"magma/orc8r/cloud/go/test_utils"
 	"magma/orc8r/lib/go/protos"
-	"magma/orc8r/lib/go/registry"
 
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/context"
@@ -40,13 +40,13 @@ func TestServiceRun(t *testing.T) {
 	serviceName := state.ServiceName
 
 	// Create the service
-	srv, lis := test_utils.NewTestOrchestratorService(t, orc8r.ModuleName, serviceName, nil, nil)
+	srv, lis := test.NewOrchestratorService(t, orc8r.ModuleName, serviceName, nil, nil)
 	assert.Equal(t, protos.ServiceInfo_STARTING, srv.State)
 	assert.Equal(t, protos.ServiceInfo_APP_UNHEALTHY, srv.Health)
 	assert.NotNil(t, srv.EchoServer)
 
 	// start the service
-	go srv.RunTest(lis)
+	go srv.RunTest(t, lis)
 
 	// wait for the service to be started and check its state and health
 	time.Sleep(time.Second)
@@ -54,7 +54,7 @@ func TestServiceRun(t *testing.T) {
 	assert.Equal(t, protos.ServiceInfo_APP_HEALTHY, srv.Health)
 
 	// Create a rpc stub and query the Service303 interface
-	conn, err := registry.GetConnection(serviceName)
+	conn, err := service_registry.GetConnection(serviceName)
 	assert.NoError(t, err, "err in getting connection to service")
 	client := protos.NewService303Client(conn)
 

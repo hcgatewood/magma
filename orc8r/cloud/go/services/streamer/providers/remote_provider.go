@@ -17,10 +17,10 @@ import (
 	"context"
 	"strings"
 
+	"magma/orc8r/cloud/go/services/service_registry"
 	streamer_protos "magma/orc8r/cloud/go/services/streamer/protos"
 	merrors "magma/orc8r/lib/go/errors"
 	"magma/orc8r/lib/go/protos"
-	"magma/orc8r/lib/go/registry"
 
 	"github.com/golang/glog"
 	"github.com/golang/protobuf/ptypes/any"
@@ -61,7 +61,7 @@ func (r *remoteProvider) GetUpdates(gatewayId string, extraArgs *any.Any) ([]*pr
 }
 
 func (r *remoteProvider) getProviderClient() (streamer_protos.StreamProviderClient, error) {
-	conn, err := registry.GetConnection(r.service)
+	conn, err := service_registry.GetConnection(r.service)
 	if err != nil {
 		initErr := merrors.NewInitError(err, r.service)
 		glog.Error(initErr)

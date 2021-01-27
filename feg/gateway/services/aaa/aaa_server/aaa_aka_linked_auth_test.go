@@ -29,20 +29,20 @@ import (
 	eap_client "magma/feg/gateway/services/eap/client"
 	_ "magma/feg/gateway/services/eap/providers/aka/servicers/handlers"
 	eap_test "magma/feg/gateway/services/eap/test"
-	"magma/orc8r/cloud/go/test_utils"
+	service2 "magma/orc8r/cloud/go/service"
 )
 
 // TestEapAkaConcurent tests EAP AKA Provider
 func TestLinkedEapAkaConcurent(t *testing.T) {
 	os.Setenv("USE_REMOTE_SWX_PROXY", "false")
-	srv, lis := test_utils.NewTestService(t, registry.ModuleName, registry.SWX_PROXY)
+	srv, lis := service2.NewTestService(t, registry.ModuleName, registry.SWX_PROXY)
 	var service eap_test.SwxProxy
 	cp.RegisterSwxProxyServer(srv.GrpcServer, service)
-	go srv.RunTest(lis)
+	go srv.MustRunTest(t, lis)
 
-	rtrSrv, rtrLis := test_utils.NewTestService(t, registry.ModuleName, registry.AAA_SERVER)
+	rtrSrv, rtrLis := service2.NewTestService(t, registry.ModuleName, registry.AAA_SERVER)
 	protos.RegisterAuthenticatorServer(rtrSrv.GrpcServer, &testAuthenticator{supportedMethods: eap_client.SupportedTypes()})
-	go rtrSrv.RunTest(rtrLis)
+	go rtrSrv.MustRunTest(t, rtrLis)
 
 	client := &testEapServiceClient{}
 	done := make(chan error)
@@ -73,9 +73,9 @@ func TestLinkedEAPPeerNak(t *testing.T) {
 	akaPrimeNak := []byte{0x02, 237, 0x00, 0x06, 0x03, 50}
 	akaAkaPrimeNak := []byte{0x02, 236, 0x00, 0x07, 0x03, 50, 23}
 
-	rtrSrv, rtrLis := test_utils.NewTestService(t, registry.ModuleName, registry.AAA_SERVER)
+	rtrSrv, rtrLis := service2.NewTestService(t, registry.ModuleName, registry.AAA_SERVER)
 	protos.RegisterAuthenticatorServer(rtrSrv.GrpcServer, &testAuthenticator{supportedMethods: eap_client.SupportedTypes()})
-	go rtrSrv.RunTest(rtrLis)
+	go rtrSrv.MustRunTest(t, rtrLis)
 
 	eapCtx := &protos.Context{SessionId: eap.CreateSessionId()}
 

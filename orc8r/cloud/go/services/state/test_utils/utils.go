@@ -31,8 +31,7 @@ import (
 )
 
 func ReportGatewayStatus(t *testing.T, ctx context.Context, req *models.GatewayStatus) {
-	client, err := state.GetStateClient()
-	assert.NoError(t, err)
+	client := state.GetGatewayClientForTest(t)
 
 	serializedGWStatus, err := serde.Serialize(req, orc8r.GatewayStateType, serdes.State)
 	assert.NoError(t, err)
@@ -51,8 +50,7 @@ func ReportGatewayStatus(t *testing.T, ctx context.Context, req *models.GatewayS
 }
 
 func ReportState(t *testing.T, ctx context.Context, stateType string, stateKey string, stateVal interface{}, serdes serde.Registry) {
-	client, err := state.GetStateClient()
-	assert.NoError(t, err)
+	client := state.GetGatewayClientForTest(t)
 	serializedState, err := serde.Serialize(stateVal, stateType, serdes)
 	assert.NoError(t, err)
 	states := []*protos.State{
@@ -71,5 +69,6 @@ func GetContextWithCertificate(t *testing.T, hwID string) context.Context {
 	csn := test_utils.StartMockGwAccessControl(t, []string{hwID})
 	return metadata.NewOutgoingContext(
 		context.Background(),
-		metadata.Pairs(identity.CLIENT_CERT_SN_KEY, csn[0]))
+		metadata.Pairs(identity.CLIENT_CERT_SN_KEY, csn[0]),
+	)
 }

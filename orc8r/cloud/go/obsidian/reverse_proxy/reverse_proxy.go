@@ -20,7 +20,7 @@ import (
 	"strings"
 
 	"magma/orc8r/cloud/go/orc8r"
-	"magma/orc8r/lib/go/registry"
+	"magma/orc8r/cloud/go/services/service_registry"
 
 	"github.com/golang/glog"
 	"github.com/labstack/echo"
@@ -29,7 +29,7 @@ import (
 
 // ReverseProxyHandler tracks registered paths to their associated proxy
 // backends. This is used to dynamically update the proxy middleware based
-// off of the service registry
+// off of the service registry.
 type ReverseProxyHandler struct {
 	proxyBackendsByPathPrefix map[string]*reverseProxyBackend
 }
@@ -116,12 +116,12 @@ func (r *ReverseProxyHandler) updateInactiveBackends(activePrefixes map[string]b
 
 func GetEchoServerAddressToPathPrefixes() (map[*url.URL][]string, error) {
 	pathPrefixesByAddr := map[*url.URL][]string{}
-	services, err := registry.FindServices(orc8r.ObsidianHandlersLabel)
+	services, err := service_registry.FindServices(orc8r.ObsidianHandlersLabel)
 	if err != nil {
 		return pathPrefixesByAddr, err
 	}
 	for _, srv := range services {
-		pathPrefixes, err := registry.GetAnnotationList(srv, orc8r.ObsidianHandlersPathPrefixesAnnotation)
+		pathPrefixes, err := service_registry.GetAnnotationList(srv, orc8r.ObsidianHandlersPathPrefixesAnnotation)
 		if err != nil {
 			return map[*url.URL][]string{}, err
 		}
@@ -135,7 +135,7 @@ func GetEchoServerAddressToPathPrefixes() (map[*url.URL][]string, error) {
 }
 
 func getEchoServerAddressForService(service string) (*url.URL, error) {
-	httpServerAddr, err := registry.GetHttpServerAddress(service)
+	httpServerAddr, err := service_registry.GetHTTPServerAddress(service)
 	if err != nil {
 		return nil, err
 	}

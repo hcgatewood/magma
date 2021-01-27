@@ -280,8 +280,7 @@ func initReindexTest(t *testing.T, dbName string) (reindex.Reindexer, reindex.Jo
 }
 
 func reportDirectoryRecord(t *testing.T, ctx context.Context, deviceIDs []string, records []*directoryd_types.DirectoryRecord) {
-	client, err := state.GetStateClient()
-	assert.NoError(t, err)
+	client := state.GetGatewayClientForTest(t)
 
 	var states []*protos.State
 	for i, st := range records {
@@ -290,13 +289,12 @@ func reportDirectoryRecord(t *testing.T, ctx context.Context, deviceIDs []string
 		pState := &protos.State{Type: orc8r.DirectoryRecordType, DeviceID: deviceIDs[i], Value: serialized}
 		states = append(states, pState)
 	}
-	_, err = client.ReportStates(ctx, &protos.ReportStatesRequest{States: states})
+	_, err := client.ReportStates(ctx, &protos.ReportStatesRequest{States: states})
 	assert.NoError(t, err)
 }
 
 func reportGatewayStatus(t *testing.T, ctx context.Context, gwStatus *models.GatewayStatus) {
-	client, err := state.GetStateClient()
-	assert.NoError(t, err)
+	client := state.GetGatewayClientForTest(t)
 
 	serialized, err := serde.Serialize(gwStatus, orc8r.GatewayStateType, serdes.State)
 	assert.NoError(t, err)

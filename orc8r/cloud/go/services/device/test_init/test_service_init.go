@@ -16,21 +16,22 @@ package test_init
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
+	blobstore_test "magma/orc8r/cloud/go/blobstore/test"
 	"magma/orc8r/cloud/go/orc8r"
+	"magma/orc8r/cloud/go/service/test"
 	"magma/orc8r/cloud/go/services/device"
 	"magma/orc8r/cloud/go/services/device/protos"
 	"magma/orc8r/cloud/go/services/device/servicers"
-	"magma/orc8r/cloud/go/test_utils"
-
-	"github.com/stretchr/testify/assert"
 )
 
 // StartTestService instantiates a service backed by an in-memory storage
 func StartTestService(t *testing.T) {
-	factory := test_utils.NewSQLBlobstore(t, "device_test_service_blobstore")
-	srv, lis := test_utils.NewTestService(t, orc8r.ModuleName, device.ServiceName)
+	factory := blobstore_test.NewSQLBlobstore(t, "device_test_service_blobstore")
+	srv, lis := test.NewService(t, orc8r.ModuleName, device.ServiceName)
 	server, err := servicers.NewDeviceServicer(factory)
 	assert.NoError(t, err)
 	protos.RegisterDeviceServer(srv.GrpcServer, server)
-	go srv.RunTest(lis)
+	go srv.MustRunTest(t, lis)
 }

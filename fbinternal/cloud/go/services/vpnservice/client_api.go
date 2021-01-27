@@ -2,9 +2,9 @@ package vpnservice
 
 import (
 	fbprotos "magma/fbinternal/cloud/go/protos"
+	"magma/orc8r/cloud/go/services/service_registry"
 	"magma/orc8r/lib/go/errors"
 	"magma/orc8r/lib/go/protos"
-	"magma/orc8r/lib/go/registry"
 
 	"github.com/golang/glog"
 	"golang.org/x/net/context"
@@ -14,7 +14,7 @@ const ServiceName = "VPNSERVICE"
 
 // Utility function to get a RPC connection to the VPN service
 func getVPNServiceClient() (fbprotos.VPNServiceClient, error) {
-	conn, err := registry.GetConnection(ServiceName)
+	conn, err := service_registry.GetConnection(ServiceName)
 	if err != nil {
 		initErr := errors.NewInitError(err, ServiceName)
 		glog.Error(initErr)

@@ -17,12 +17,13 @@ import (
 	"testing"
 	"time"
 
+	blobstore_test "magma/orc8r/cloud/go/blobstore/test"
 	"magma/orc8r/cloud/go/orc8r"
+	"magma/orc8r/cloud/go/service/test"
 	"magma/orc8r/cloud/go/services/certifier"
 	certprotos "magma/orc8r/cloud/go/services/certifier/protos"
 	"magma/orc8r/cloud/go/services/certifier/servicers"
 	"magma/orc8r/cloud/go/services/certifier/storage"
-	"magma/orc8r/cloud/go/test_utils"
 	"magma/orc8r/lib/go/protos"
 	certifierTestUtils "magma/orc8r/lib/go/security/csr"
 )
@@ -43,16 +44,13 @@ func StartTestService(t *testing.T) {
 	} else {
 		caMap[protos.CertType_VPN] = &servicers.CAInfo{Cert: vpnCert, PrivKey: vpnKey}
 	}
-	store := test_utils.NewSQLBlobstore(t, storage.CertifierTableBlobstore)
+	store := blobstore_test.NewSQLBlobstore(t, storage.CertifierTableBlobstore)
 	certStore := storage.NewCertifierBlobstore(store)
 	certServer, err := servicers.NewCertifierServer(certStore, caMap)
 	if err != nil {
 		t.Fatalf("Failed to create certifier server: %s", err)
 	}
-	srv, lis := test_utils.NewTestService(t, orc8r.ModuleName, certifier.ServiceName)
-	certprotos.RegisterCertifierServer(
-		srv.GrpcServer,
-		certServer,
-	)
-	go srv.RunTest(lis)
+	srv, lis := test.NewService(t, orc8r.ModuleName, certifier.ServiceName)
+	certprotos.RegisterCertifierServer(srv.GrpcServer, certServer)
+	go srv.MustRunTest(t, lis)
 }

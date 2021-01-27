@@ -22,9 +22,9 @@ import (
 	"golang.org/x/net/context"
 
 	accessprotos "magma/orc8r/cloud/go/services/accessd/protos"
+	"magma/orc8r/cloud/go/services/service_registry"
 	merrors "magma/orc8r/lib/go/errors"
 	"magma/orc8r/lib/go/protos"
-	"magma/orc8r/lib/go/registry"
 )
 
 const ServiceName = "ACCESSD"
@@ -32,7 +32,7 @@ const ServiceName = "ACCESSD"
 // getAccessbClient is a utility function to get a RPC connection to the
 // accessd service
 func getAccessdClient() (accessprotos.AccessControlManagerClient, error) {
-	conn, err := registry.GetConnection(ServiceName)
+	conn, err := service_registry.GetConnection(ServiceName)
 	if err != nil {
 		initErr := merrors.NewInitError(err, ServiceName)
 		glog.Error(initErr)

@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"net"
 	"sync"
+	"testing"
 	"time"
 
 	"magma/orc8r/lib/go/protos"
@@ -145,7 +146,12 @@ func (service *Service) Run() error {
 	if err != nil {
 		return fmt.Errorf("get service port: %v", err)
 	}
+	return service.RunWithPort(port)
+}
 
+// RunWithPort is same as Run, but with static port rather than chosen from
+// global registry.
+func (service *Service) RunWithPort(port int) error {
 	// Create the server socket for gRPC
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
@@ -156,15 +162,23 @@ func (service *Service) Run() error {
 	return service.GrpcServer.Serve(lis)
 }
 
+// MustRunTest is same as RunTest but fatals when RunTest returns an error.
+func (service *Service) MustRunTest(t *testing.T, lis net.Listener) {
+	err := service.RunTest(t, lis)
+	if err != nil {
+		t.Fatalf("Failed to run test service: %+v", err)
+	}
+}
+
 // RunTest runs the test service on a given Listener. This function blocks
 // by a signal or until the gRPC server is stopped.
-func (service *Service) RunTest(lis net.Listener) {
+func (service *Service) RunTest(t *testing.T, lis net.Listener) error {
+	if t == nil {
+		panic("for tests only")
+	}
 	service.State = protos.ServiceInfo_ALIVE
 	service.Health = protos.ServiceInfo_APP_HEALTHY
-	err := service.GrpcServer.Serve(lis)
-	if err != nil {
-		glog.Fatal("Failed to run test service")
-	}
+	return service.GrpcServer.Serve(lis)
 }
 
 // GetDefaultKeepaliveParameters returns the default keepalive server parameters.

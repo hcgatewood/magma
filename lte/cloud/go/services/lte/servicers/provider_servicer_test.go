@@ -29,10 +29,10 @@ import (
 	"magma/orc8r/cloud/go/plugin"
 	"magma/orc8r/cloud/go/services/configurator"
 	configurator_test_init "magma/orc8r/cloud/go/services/configurator/test_init"
+	"magma/orc8r/cloud/go/services/service_registry"
 	streamer_protos "magma/orc8r/cloud/go/services/streamer/protos"
 	"magma/orc8r/cloud/go/storage"
 	"magma/orc8r/lib/go/protos"
-	"magma/orc8r/lib/go/registry"
 
 	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -52,7 +52,7 @@ func TestLTEStreamProviderServicer_GetUpdates(t *testing.T) {
 	configurator_test_init.StartTestService(t)
 	lte_test_init.StartTestService(t)
 
-	conn, err := registry.GetConnection(lte_service.ServiceName)
+	conn, err := service_registry.GetConnection(lte_service.ServiceName)
 	assert.NoError(t, err)
 	c := streamer_protos.NewStreamProviderClient(conn)
 	ctx := context.Background()

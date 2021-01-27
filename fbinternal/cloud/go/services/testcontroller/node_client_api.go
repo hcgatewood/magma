@@ -18,15 +18,15 @@ import (
 
 	"magma/fbinternal/cloud/go/services/testcontroller/protos"
 	"magma/fbinternal/cloud/go/services/testcontroller/storage"
+	"magma/orc8r/cloud/go/services/service_registry"
 	merrors "magma/orc8r/lib/go/errors"
-	"magma/orc8r/lib/go/registry"
 
 	"github.com/golang/glog"
 	"github.com/golang/protobuf/ptypes/wrappers"
 )
 
 func getNodeClient() (protos.NodeLeasorClient, error) {
-	conn, err := registry.GetConnection(ServiceName)
+	conn, err := service_registry.GetConnection(ServiceName)
 	if err != nil {
 		initErr := merrors.NewInitError(err, ServiceName)
 		glog.Error(initErr)

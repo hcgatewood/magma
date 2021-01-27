@@ -23,7 +23,7 @@ import (
 	"magma/feg/gateway/policydb"
 	"magma/feg/gateway/services/testcore/hss"
 	lteprotos "magma/lte/cloud/go/protos"
-	registryTestUtils "magma/orc8r/cloud/go/test_utils"
+	"magma/orc8r/cloud/go/services/service_registry/test"
 	"magma/orc8r/lib/go/protos"
 	orc8rprotos "magma/orc8r/lib/go/protos"
 
@@ -501,7 +501,7 @@ func getOCSAssertExpectationsResultPerInstance(instanceName string) ([]*fegproto
 func getPipelinedClient() (*pipelinedClient, error) {
 	var conn *grpc.ClientConn
 	var err error
-	conn, err = registryTestUtils.GetConnectionWithAuthority(PipelinedRemote)
+	conn, err = test.GetConnectionWithAuthority(PipelinedRemote)
 	if err != nil {
 		errMsg := fmt.Sprintf("Pipelined client initialization error: %s", err)
 		glog.Error(errMsg)
@@ -587,7 +587,7 @@ func contains(wordToFind string, words []string) bool {
 func getDirectorydClient() (*directorydClient, error) {
 	var conn *grpc.ClientConn
 	var err error
-	conn, err = registryTestUtils.GetConnectionWithAuthority(DirectorydRemote)
+	conn, err = test.GetConnectionWithAuthority(DirectorydRemote)
 	if err != nil {
 		errMsg := fmt.Sprintf("Directoryd client initialization error: %s", err)
 		glog.Error(errMsg)

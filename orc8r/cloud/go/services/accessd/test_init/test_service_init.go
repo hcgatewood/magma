@@ -16,18 +16,19 @@ package test_init
 import (
 	"testing"
 
+	blobstore_test "magma/orc8r/cloud/go/blobstore/test"
 	"magma/orc8r/cloud/go/orc8r"
+	"magma/orc8r/cloud/go/service/test"
 	"magma/orc8r/cloud/go/services/accessd"
 	"magma/orc8r/cloud/go/services/accessd/protos"
 	"magma/orc8r/cloud/go/services/accessd/servicers"
 	"magma/orc8r/cloud/go/services/accessd/storage"
-	"magma/orc8r/cloud/go/test_utils"
 )
 
 func StartTestService(t *testing.T) {
-	srv, lis := test_utils.NewTestService(t, orc8r.ModuleName, accessd.ServiceName)
-	store := test_utils.NewSQLBlobstore(t, storage.AccessdTableBlobstore)
+	srv, lis := test.NewService(t, orc8r.ModuleName, accessd.ServiceName)
+	store := blobstore_test.NewSQLBlobstore(t, storage.AccessdTableBlobstore)
 	accessdStore := storage.NewAccessdBlobstore(store)
 	protos.RegisterAccessControlManagerServer(srv.GrpcServer, servicers.NewAccessdServer(accessdStore))
-	go srv.RunTest(lis)
+	go srv.MustRunTest(t, lis)
 }

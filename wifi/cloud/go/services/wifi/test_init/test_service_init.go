@@ -17,8 +17,8 @@ import (
 	"testing"
 
 	"magma/orc8r/cloud/go/orc8r"
+	"magma/orc8r/cloud/go/service/test"
 	builder_protos "magma/orc8r/cloud/go/services/configurator/mconfig/protos"
-	"magma/orc8r/cloud/go/test_utils"
 	wifi_service "magma/wifi/cloud/go/services/wifi"
 	"magma/wifi/cloud/go/services/wifi/servicers"
 	"magma/wifi/cloud/go/wifi"
@@ -29,8 +29,8 @@ func StartTestService(t *testing.T) {
 		orc8r.MconfigBuilderLabel: "true",
 	}
 
-	srv, lis := test_utils.NewTestOrchestratorService(t, wifi.ModuleName, wifi_service.ServiceName, labels, nil)
+	srv, lis := test.NewOrchestratorService(t, wifi.ModuleName, wifi_service.ServiceName, labels, nil)
 	builder_protos.RegisterMconfigBuilderServer(srv.GrpcServer, servicers.NewBuilderServicer())
 
-	go srv.RunTest(lis)
+	go srv.RunTest(t, lis)
 }

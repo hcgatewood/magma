@@ -22,14 +22,14 @@ import (
 	"strings"
 
 	"magma/orc8r/cloud/go/plugin"
+	"magma/orc8r/cloud/go/services/service_registry"
 	"magma/orc8r/cloud/go/tools/accessc/handlers"
-	"magma/orc8r/lib/go/registry"
 )
 
 func main() {
 	flag.Parse()
 	plugin.LoadAllPluginsFatalOnError(&plugin.DefaultOrchestratorPluginLoader{})
-	registry.MustPopulateServices()
+	service_registry.MustPopulateServices()
 
 	// Init help for all commands
 	flag.Usage = func() {

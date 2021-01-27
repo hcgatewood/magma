@@ -50,7 +50,7 @@ func (d *directoryUpdateServicer) UpdateRecord(c context.Context, r *protos.Upda
 		gw := protos.GetClientGateway(c)
 		r.Location = gw.GetHardwareId()
 	}
-	client, err := state.GetStateClient()
+	client, err := state.GetClient()
 	if err != nil {
 		return ret, err
 	}
@@ -80,7 +80,7 @@ func (d *directoryUpdateServicer) DeleteRecord(c context.Context, r *protos.Dele
 	if r == nil || len(r.GetId()) == 0 {
 		return ret, nil
 	}
-	client, err := state.GetStateClient()
+	client, err := state.GetClient()
 	if err != nil {
 		return ret, err
 	}
@@ -101,7 +101,7 @@ func (d *directoryUpdateServicer) GetDirectoryField(
 	if err != nil {
 		return ret, err
 	}
-	client, err := state.GetStateClient()
+	client, err := state.GetClient()
 	if err != nil {
 		return ret, err
 	}
@@ -150,7 +150,7 @@ func (d *directoryUpdateServicer) GetAllDirectoryRecords(
 	if err != nil {
 		return ret, err
 	}
-	client, err := state.GetStateClient()
+	client, err := state.GetClient()
 	if err != nil {
 		return ret, err
 	}

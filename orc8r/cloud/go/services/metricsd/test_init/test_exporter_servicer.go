@@ -18,9 +18,9 @@ import (
 	"testing"
 
 	"magma/orc8r/cloud/go/orc8r"
+	"magma/orc8r/cloud/go/service/test"
 	"magma/orc8r/cloud/go/services/metricsd/exporters"
 	"magma/orc8r/cloud/go/services/metricsd/protos"
-	"magma/orc8r/cloud/go/test_utils"
 )
 
 type exporterServicer struct {
@@ -33,10 +33,10 @@ func StartNewTestExporter(t *testing.T, exporter exporters.Exporter) {
 	labels := map[string]string{
 		orc8r.MetricsExporterLabel: "true",
 	}
-	srv, lis := test_utils.NewTestOrchestratorService(t, orc8r.ModuleName, "MOCK_EXPORTER_SERVICE", labels, nil)
+	srv, lis := test.NewOrchestratorService(t, orc8r.ModuleName, "MOCK_EXPORTER_SERVICE", labels, nil)
 	servicer := &exporterServicer{exporter: exporter}
 	protos.RegisterMetricsExporterServer(srv.GrpcServer, servicer)
-	go srv.RunTest(lis)
+	go srv.RunTest(t, lis)
 }
 
 func (e *exporterServicer) Submit(ctx context.Context, req *protos.SubmitMetricsRequest) (*protos.SubmitMetricsResponse, error) {

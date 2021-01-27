@@ -18,9 +18,9 @@ import (
 	"testing"
 
 	"magma/orc8r/cloud/go/orc8r"
+	"magma/orc8r/cloud/go/service/test"
 	"magma/orc8r/cloud/go/services/configurator/mconfig"
 	builder_protos "magma/orc8r/cloud/go/services/configurator/mconfig/protos"
-	"magma/orc8r/cloud/go/test_utils"
 )
 
 type builderServicer struct {
@@ -33,10 +33,10 @@ func StartNewTestBuilder(t *testing.T, builder mconfig.Builder) {
 	labels := map[string]string{
 		orc8r.MconfigBuilderLabel: "true",
 	}
-	srv, lis := test_utils.NewTestOrchestratorService(t, orc8r.ModuleName, "test_mconfig_builder_service", labels, nil)
+	srv, lis := test.NewOrchestratorService(t, orc8r.ModuleName, "test_mconfig_builder_service", labels, nil)
 	servicer := &builderServicer{builder: builder}
 	builder_protos.RegisterMconfigBuilderServer(srv.GrpcServer, servicer)
-	go srv.RunTest(lis)
+	go srv.RunTest(t, lis)
 }
 
 func (s *builderServicer) Build(ctx context.Context, request *builder_protos.BuildRequest) (*builder_protos.BuildResponse, error) {

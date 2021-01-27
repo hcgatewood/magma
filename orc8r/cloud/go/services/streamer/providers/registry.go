@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// File registry.go provides a stream provider registry by forwarding calls to
+// File service_registry.go provides a stream provider registry by forwarding calls to
 // the service registry.
 
 package providers
@@ -20,7 +20,7 @@ import (
 	"fmt"
 
 	"magma/orc8r/cloud/go/orc8r"
-	"magma/orc8r/lib/go/registry"
+	"magma/orc8r/cloud/go/services/service_registry"
 
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
@@ -51,13 +51,13 @@ func GetStreamProvider(streamName string) (StreamProvider, error) {
 }
 
 func getServicesForStream(streamName string) ([]string, error) {
-	services, err := registry.FindServices(orc8r.StreamProviderLabel)
+	services, err := service_registry.FindServices(orc8r.StreamProviderLabel)
 	if err != nil {
 		return []string{}, err
 	}
 	var ret []string
 	for _, s := range services {
-		streams, err := registry.GetAnnotationList(s, orc8r.StreamProviderStreamsAnnotation)
+		streams, err := service_registry.GetAnnotationList(s, orc8r.StreamProviderStreamsAnnotation)
 		// Ignore annotation errors, since they indicate either
 		//	- service registry contents were recently updated
 		//	- this service has incorrect annotations given its label

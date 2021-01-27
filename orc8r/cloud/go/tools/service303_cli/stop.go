@@ -18,9 +18,9 @@ import (
 	"fmt"
 	"os"
 
+	"magma/orc8r/cloud/go/service/service303"
 	"magma/orc8r/cloud/go/services/dispatcher/gateway_registry"
-	"magma/orc8r/cloud/go/services/dispatcher/gw_client_apis/service303"
-	"magma/orc8r/lib/go/service/client"
+	gw_service303 "magma/orc8r/cloud/go/services/dispatcher/gw_client_apis/service303"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
@@ -74,8 +74,8 @@ func stopService(service string) error {
 
 func stopServiceOrGwService(service string) error {
 	if isGatewayServiceQuery {
-		return service303.GWService303StopService(gateway_registry.GwServiceType(service), hardwareID)
+		return gw_service303.GWService303StopService(gateway_registry.GwServiceType(service), hardwareID)
 	} else {
-		return client.Service303StopService(service)
+		return service303.StopService(service)
 	}
 }

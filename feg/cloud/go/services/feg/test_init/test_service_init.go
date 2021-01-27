@@ -20,8 +20,8 @@ import (
 	feg_service "magma/feg/cloud/go/services/feg"
 	"magma/feg/cloud/go/services/feg/servicers"
 	"magma/orc8r/cloud/go/orc8r"
+	"magma/orc8r/cloud/go/service/test"
 	builder_protos "magma/orc8r/cloud/go/services/configurator/mconfig/protos"
-	"magma/orc8r/cloud/go/test_utils"
 )
 
 func StartTestService(t *testing.T) {
@@ -29,8 +29,8 @@ func StartTestService(t *testing.T) {
 		orc8r.MconfigBuilderLabel: "true",
 	}
 
-	srv, lis := test_utils.NewTestOrchestratorService(t, feg.ModuleName, feg_service.ServiceName, labels, nil)
+	srv, lis := test.NewOrchestratorService(t, feg.ModuleName, feg_service.ServiceName, labels, nil)
 	builder_protos.RegisterMconfigBuilderServer(srv.GrpcServer, servicers.NewBuilderServicer())
 
-	go srv.RunTest(lis)
+	go srv.RunTest(t, lis)
 }

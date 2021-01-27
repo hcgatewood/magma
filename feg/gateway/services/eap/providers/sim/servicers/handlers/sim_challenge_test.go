@@ -22,7 +22,7 @@ import (
 	"magma/feg/gateway/services/aaa/protos"
 	"magma/feg/gateway/services/eap"
 	"magma/feg/gateway/services/eap/providers/sim/servicers"
-	"magma/orc8r/cloud/go/test_utils"
+	service2 "magma/orc8r/cloud/go/service"
 )
 
 var (
@@ -33,10 +33,10 @@ var (
 
 func TestSimChallengeResp(t *testing.T) {
 	os.Setenv("USE_REMOTE_SWX_PROXY", "false")
-	srv, lis := test_utils.NewTestService(t, registry.ModuleName, registry.SWX_PROXY)
+	srv, lis := service2.NewTestService(t, registry.ModuleName, registry.SWX_PROXY)
 	var service testSwxProxy
 	cp.RegisterSwxProxyServer(srv.GrpcServer, service)
-	go srv.RunTest(lis)
+	go srv.MustRunTest(t, lis)
 
 	simSrv, _ := servicers.NewEapSimService(nil)
 	eapCtx := &protos.Context{}

@@ -28,8 +28,8 @@ import (
 	"magma/orc8r/cloud/go/services/dispatcher"
 	"magma/orc8r/cloud/go/services/dispatcher/test_init"
 	"magma/orc8r/cloud/go/services/orchestrator/obsidian/models"
+	"magma/orc8r/cloud/go/services/service_registry"
 	"magma/orc8r/lib/go/protos"
-	"magma/orc8r/lib/go/registry"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
@@ -66,7 +66,7 @@ func TestSyncRPC(t *testing.T) {
 	t.Logf("New Registered Network: %s", testNetworkID)
 	configuratorTestUtils.RegisterGateway(t, testNetworkID, TestSyncRPCAgHwId, &models.GatewayDevice{HardwareID: TestSyncRPCAgHwId})
 
-	conn, err := registry.GetConnection(dispatcher.ServiceName)
+	conn, err := service_registry.GetConnection(dispatcher.ServiceName)
 	assert.NoError(t, err)
 	syncRPCClient := protos.NewSyncRPCServiceClient(conn)
 

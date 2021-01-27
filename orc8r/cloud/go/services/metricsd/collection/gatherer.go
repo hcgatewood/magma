@@ -17,7 +17,7 @@ import (
 	"fmt"
 	"time"
 
-	"magma/orc8r/lib/go/registry"
+	"magma/orc8r/cloud/go/services/service_registry"
 
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
@@ -77,7 +77,7 @@ func (g *MetricsGatherer) gatherEvery(collector MetricCollector) {
 func (g *MetricsGatherer) getCollectors() []MetricCollector {
 	collectors := g.StaticCollectors
 
-	services, err := registry.ListAllServices()
+	services, err := service_registry.ListAllServices()
 	if err != nil {
 		err = errors.Wrap(err, "error getting metrics collectors: list all services")
 		glog.Warning(err)

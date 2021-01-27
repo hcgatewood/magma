@@ -44,8 +44,7 @@ func StartMockGwAccessControl(t *testing.T, hwGwIds []string) []string {
 	result := make([]string, len(hwGwIds))
 	for idx, hwId := range hwGwIds {
 		// create and sign Gw's csr
-		csrMsg, err := csr.CreateCSRForId(
-			time.Hour*4, identity.NewGateway(hwId, "", ""))
+		csrMsg, err := csr.CreateCSRForId(time.Hour*4, identity.NewGateway(hwId, "", ""))
 		assert.NoError(t, err)
 
 		certMsg, err := certifier.SignCSR(csrMsg)

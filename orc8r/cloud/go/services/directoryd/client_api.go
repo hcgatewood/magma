@@ -20,10 +20,10 @@ import (
 	"magma/orc8r/cloud/go/orc8r"
 	"magma/orc8r/cloud/go/serdes"
 	"magma/orc8r/cloud/go/services/directoryd/types"
+	"magma/orc8r/cloud/go/services/service_registry"
 	"magma/orc8r/cloud/go/services/state"
 	merrors "magma/orc8r/lib/go/errors"
 	"magma/orc8r/lib/go/protos"
-	"magma/orc8r/lib/go/registry"
 
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
@@ -37,7 +37,7 @@ const ServiceName = "DIRECTORYD"
 
 // getDirectorydClient returns an RPC connection to the directoryd service.
 func getDirectorydClient() (protos.DirectoryLookupClient, error) {
-	conn, err := registry.GetConnection(ServiceName)
+	conn, err := service_registry.GetConnection(ServiceName)
 	if err != nil {
 		initErr := merrors.NewInitError(err, ServiceName)
 		glog.Error(initErr)

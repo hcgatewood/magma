@@ -19,10 +19,10 @@ import (
 	"magma/orc8r/cloud/go/serde"
 	"magma/orc8r/cloud/go/services/configurator/protos"
 	"magma/orc8r/cloud/go/services/configurator/storage"
+	"magma/orc8r/cloud/go/services/service_registry"
 	storage2 "magma/orc8r/cloud/go/storage"
 	merrors "magma/orc8r/lib/go/errors"
 	commonProtos "magma/orc8r/lib/go/protos"
-	"magma/orc8r/lib/go/registry"
 
 	"github.com/golang/glog"
 	"github.com/golang/protobuf/ptypes/wrappers"
@@ -686,7 +686,7 @@ func LoadAllEntitiesOfType(networkID string, entityType string, criteria EntityL
 }
 
 func getNBConfiguratorClient() (protos.NorthboundConfiguratorClient, error) {
-	conn, err := registry.GetConnection(ServiceName)
+	conn, err := service_registry.GetConnection(ServiceName)
 	if err != nil {
 		initErr := merrors.NewInitError(err, ServiceName)
 		glog.Error(initErr)
@@ -704,7 +704,7 @@ func GetMconfigFor(hardwareID string) (*protos.GetMconfigResponse, error) {
 }
 
 func getSBConfiguratorClient() (protos.SouthboundConfiguratorClient, error) {
-	conn, err := registry.GetConnection(ServiceName)
+	conn, err := service_registry.GetConnection(ServiceName)
 	if err != nil {
 		initErr := merrors.NewInitError(err, ServiceName)
 		glog.Error(initErr)

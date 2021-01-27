@@ -22,7 +22,7 @@ import (
 
 	"magma/feg/gateway/registry"
 	"magma/lte/cloud/go/protos"
-	"magma/orc8r/cloud/go/test_utils"
+	service2 "magma/orc8r/cloud/go/service"
 	orc8rProtos "magma/orc8r/lib/go/protos"
 )
 
@@ -32,12 +32,12 @@ type MockSessionManager struct {
 }
 
 func NewRunningSessionManager(t *testing.T) *MockSessionManager {
-	srv, lis := test_utils.NewTestService(t, registry.ModuleName, registry.SESSION_MANAGER)
+	srv, lis := service2.NewTestService(t, registry.ModuleName, registry.SESSION_MANAGER)
 	service := &MockSessionManager{
 		returnErrors: false,
 	}
 	protos.RegisterLocalSessionManagerServer(srv.GrpcServer, service)
-	go srv.RunTest(lis)
+	go srv.MustRunTest(t, lis)
 	return service
 }
 

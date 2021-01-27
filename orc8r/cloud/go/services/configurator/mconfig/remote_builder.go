@@ -19,8 +19,8 @@ import (
 
 	"magma/orc8r/cloud/go/services/configurator/mconfig/protos"
 	"magma/orc8r/cloud/go/services/configurator/storage"
+	"magma/orc8r/cloud/go/services/service_registry"
 	merrors "magma/orc8r/lib/go/errors"
-	"magma/orc8r/lib/go/registry"
 
 	"github.com/golang/glog"
 )
@@ -51,7 +51,7 @@ func (r *remoteBuilder) Build(network *storage.Network, graph *storage.EntityGra
 }
 
 func (r *remoteBuilder) getBuilderClient() (protos.MconfigBuilderClient, error) {
-	conn, err := registry.GetConnection(r.service)
+	conn, err := service_registry.GetConnection(r.service)
 	if err != nil {
 		initErr := merrors.NewInitError(err, r.service)
 		glog.Error(initErr)

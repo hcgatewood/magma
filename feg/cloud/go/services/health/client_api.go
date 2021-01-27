@@ -21,8 +21,8 @@ import (
 	"fmt"
 
 	"magma/feg/cloud/go/protos"
+	"magma/orc8r/cloud/go/services/service_registry"
 	"magma/orc8r/lib/go/errors"
-	"magma/orc8r/lib/go/registry"
 
 	"github.com/golang/glog"
 )
@@ -30,7 +30,7 @@ import (
 // getHealthClient is a utility function to get an RPC connection to the
 // Health service
 func getHealthClient() (protos.HealthClient, error) {
-	conn, err := registry.GetConnection(ServiceName)
+	conn, err := service_registry.GetConnection(ServiceName)
 	if err != nil {
 		initErr := errors.NewInitError(err, ServiceName)
 		glog.Error(initErr)

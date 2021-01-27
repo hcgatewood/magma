@@ -73,7 +73,7 @@ func TestStateService(t *testing.T) {
 	assert.Empty(t, states)
 
 	// Report and read back
-	repRes, err := reportStates(ctx, bundle0, bundle1)
+	repRes, err := reportStates(t, ctx, bundle0, bundle1)
 	assert.NoError(t, err)
 	assert.Empty(t, repRes.UnreportedStates)
 	states, err = state.GetStates(networkID, state_types.IDs{bundle0.ID, bundle1.ID}, stateSerdes)
@@ -84,7 +84,7 @@ func TestStateService(t *testing.T) {
 
 	// Update states, ensuring version is set properly
 	bundle1.state.Version = 15
-	repRes, err = reportStates(ctx, bundle0, bundle1)
+	repRes, err = reportStates(t, ctx, bundle0, bundle1)
 	assert.NoError(t, err)
 	assert.Empty(t, repRes.UnreportedStates)
 	states, err = state.GetStates(networkID, state_types.IDs{bundle0.ID, bundle1.ID}, stateSerdes)
@@ -96,7 +96,7 @@ func TestStateService(t *testing.T) {
 	// Sync states
 	bundle0.state.Version = 1  // synced
 	bundle1.state.Version = 20 // unsynced
-	res, err := syncStates(ctx, bundle0, bundle1)
+	res, err := syncStates(t, ctx, bundle0, bundle1)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(res.GetUnsyncedStates()))
 	assert.Equal(t, bundle1.ID.DeviceID, res.GetUnsyncedStates()[0].Id.DeviceID)
@@ -104,7 +104,7 @@ func TestStateService(t *testing.T) {
 	assert.Equal(t, uint64(15), res.GetUnsyncedStates()[0].Version)
 
 	// Report a state with fields the corresponding serde does not expect
-	repRes, err = reportStates(ctx, bundle2)
+	repRes, err = reportStates(t, ctx, bundle2)
 	assert.NoError(t, err)
 	assert.Empty(t, repRes.UnreportedStates)
 	states, err = state.GetStates(networkID, state_types.IDs{bundle2.ID}, stateSerdes)
@@ -127,7 +127,7 @@ func TestStateService(t *testing.T) {
 	// => should only receive key0
 	unserializableBundle := makeStateBundle("nonexistent-serde", "key3", value0)
 	invalidBundle := makeStateBundle("test-serde", "key1", Name{Name: "BADNAME"})
-	repRes, err = reportStates(ctx, bundle0, unserializableBundle, invalidBundle)
+	repRes, err = reportStates(t, ctx, bundle0, unserializableBundle, invalidBundle)
 	assert.NoError(t, err)
 	assert.Empty(t, repRes.UnreportedStates) // validity is checked by the consumer
 	// Only valid state should be accessible
@@ -194,20 +194,14 @@ func (m *Name) ValidateModel() error {
 	return nil
 }
 
-func reportStates(ctx context.Context, bundles ...stateBundle) (*protos.ReportStatesResponse, error) {
-	client, err := state.GetStateClient()
-	if err != nil {
-		return nil, err
-	}
+func reportStates(t *testing.T, ctx context.Context, bundles ...stateBundle) (*protos.ReportStatesResponse, error) {
+	client := state.GetGatewayClientForTest(t)
 	response, err := client.ReportStates(ctx, makeReportStatesRequest(bundles))
 	return response, err
 }
 
-func syncStates(ctx context.Context, bundles ...stateBundle) (*protos.SyncStatesResponse, error) {
-	client, err := state.GetStateClient()
-	if err != nil {
-		return nil, err
-	}
+func syncStates(t *testing.T, ctx context.Context, bundles ...stateBundle) (*protos.SyncStatesResponse, error) {
+	client := state.GetGatewayClientForTest(t)
 	response, err := client.SyncStates(ctx, makeSyncStatesRequest(bundles))
 	return response, err
 }

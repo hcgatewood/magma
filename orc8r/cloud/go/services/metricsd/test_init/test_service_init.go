@@ -17,13 +17,13 @@ import (
 	"testing"
 
 	"magma/orc8r/cloud/go/orc8r"
+	"magma/orc8r/cloud/go/service/test"
 	"magma/orc8r/cloud/go/services/metricsd"
 	"magma/orc8r/cloud/go/services/metricsd/protos"
-	"magma/orc8r/cloud/go/test_utils"
 )
 
 func StartTestServiceInternal(t *testing.T, exporter protos.MetricsExporterServer) {
-	srv, lis := test_utils.NewTestService(t, orc8r.ModuleName, metricsd.ServiceName)
+	srv, lis := test.NewService(t, orc8r.ModuleName, metricsd.ServiceName)
 	protos.RegisterMetricsExporterServer(srv.GrpcServer, exporter)
-	go srv.RunTest(lis)
+	go srv.MustRunTest(t, lis)
 }

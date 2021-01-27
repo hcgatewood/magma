@@ -22,7 +22,7 @@ import (
 	"magma/orc8r/cloud/go/services/analytics/calculations"
 	"magma/orc8r/cloud/go/services/analytics/protos"
 	"magma/orc8r/cloud/go/services/analytics/query_api"
-	"magma/orc8r/lib/go/registry"
+	"magma/orc8r/cloud/go/services/service_registry"
 
 	"github.com/golang/glog"
 	v1 "github.com/prometheus/client_golang/api/prometheus/v1"
@@ -109,7 +109,7 @@ func (a *PrometheusAnalyzer) Run() {
 }
 
 func getRemoteCollectors() ([]protos.AnalyticsCollectorClient, error) {
-	services, err := registry.FindServices(orc8r.AnalyticsCollectorLabel)
+	services, err := service_registry.FindServices(orc8r.AnalyticsCollectorLabel)
 	if err != nil {
 		glog.Errorf("Failed finding analytics collectors %v", err)
 		return nil, err
@@ -117,7 +117,7 @@ func getRemoteCollectors() ([]protos.AnalyticsCollectorClient, error) {
 
 	var collectorClientList []protos.AnalyticsCollectorClient
 	for _, s := range services {
-		conn, err := registry.GetConnection(s)
+		conn, err := service_registry.GetConnection(s)
 		if err != nil {
 			glog.Errorf("Unable to get a remote connection %s error %v", s, err)
 			continue

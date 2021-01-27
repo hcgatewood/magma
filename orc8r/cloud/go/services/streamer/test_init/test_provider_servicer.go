@@ -18,9 +18,9 @@ import (
 	"testing"
 
 	"magma/orc8r/cloud/go/orc8r"
+	"magma/orc8r/cloud/go/service/test"
 	streamer_protos "magma/orc8r/cloud/go/services/streamer/protos"
 	"magma/orc8r/cloud/go/services/streamer/providers"
-	"magma/orc8r/cloud/go/test_utils"
 	"magma/orc8r/lib/go/protos"
 )
 
@@ -37,10 +37,10 @@ func StartNewTestProvider(t *testing.T, provider providers.StreamProvider) {
 	annotations := map[string]string{
 		orc8r.StreamProviderStreamsAnnotation: provider.GetStreamName(),
 	}
-	srv, lis := test_utils.NewTestOrchestratorService(t, orc8r.ModuleName, provider.GetStreamName(), labels, annotations)
+	srv, lis := test.NewOrchestratorService(t, orc8r.ModuleName, provider.GetStreamName(), labels, annotations)
 	servicer := &providerServicer{provider: provider}
 	streamer_protos.RegisterStreamProviderServer(srv.GrpcServer, servicer)
-	go srv.RunTest(lis)
+	go srv.RunTest(t, lis)
 }
 
 func (p *providerServicer) GetUpdates(ctx context.Context, req *protos.StreamRequest) (*protos.DataUpdateBatch, error) {

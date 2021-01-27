@@ -47,6 +47,7 @@ require (
 	magma/cwf/cloud/go v0.0.0
 	magma/feg/cloud/go/protos v0.0.0
 	magma/gateway v0.0.0
+	magma/orc8r/cloud/go v0.0.0
 	magma/orc8r/lib/go v0.0.0
 	magma/orc8r/lib/go/protos v0.0.0
 	rsc.io/letsencrypt v0.0.3 // indirect

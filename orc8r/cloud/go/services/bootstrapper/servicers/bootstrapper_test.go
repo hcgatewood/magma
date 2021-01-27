@@ -32,6 +32,7 @@ import (
 	bootstrap_client "magma/gateway/services/bootstrapper/service"
 	"magma/orc8r/cloud/go/orc8r"
 	"magma/orc8r/cloud/go/serdes"
+	"magma/orc8r/cloud/go/service/test"
 	"magma/orc8r/cloud/go/services/bootstrapper"
 	"magma/orc8r/cloud/go/services/bootstrapper/servicers"
 	certifier_test_init "magma/orc8r/cloud/go/services/certifier/test_init"
@@ -40,7 +41,6 @@ import (
 	configurator_test_utils "magma/orc8r/cloud/go/services/configurator/test_utils"
 	device_test_init "magma/orc8r/cloud/go/services/device/test_init"
 	"magma/orc8r/cloud/go/services/orchestrator/obsidian/models"
-	"magma/orc8r/cloud/go/test_utils"
 	"magma/orc8r/lib/go/protos"
 	"magma/orc8r/lib/go/security/csr"
 	"magma/orc8r/lib/go/security/key"
@@ -194,7 +194,7 @@ func testWithECDSA(
 
 // Test with real GW bootstrapper
 func testWithGatewayBootstrapper(t *testing.T, networkId string) {
-	srv, lis := test_utils.NewTestService(t, orc8r.ModuleName, bootstrapper.ServiceName)
+	srv, lis := test.NewService(t, orc8r.ModuleName, bootstrapper.ServiceName)
 	assert.Equal(t, protos.ServiceInfo_STARTING, srv.State)
 	assert.Equal(t, protos.ServiceInfo_APP_UNHEALTHY, srv.Health)
 
@@ -205,7 +205,7 @@ func testWithGatewayBootstrapper(t *testing.T, networkId string) {
 	assert.NoError(t, err)
 	protos.RegisterBootstrapperServer(srv.GrpcServer, bootstrapperSrv)
 
-	go srv.RunTest(lis)
+	go srv.MustRunTest(t, lis)
 
 	srvIp, srvPort, err := net.SplitHostPort(lis.Addr().String())
 	assert.NoError(t, err)

@@ -19,6 +19,7 @@ import (
 
 	"magma/orc8r/cloud/go/clock"
 	"magma/orc8r/cloud/go/sqorc"
+	"magma/orc8r/cloud/go/sqorc/test"
 
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/timestamp"
@@ -29,8 +30,8 @@ import (
 
 func TestNewSQLTestcontrollerStorage_Integration(t *testing.T) {
 	const dbName = "testcontroller__storage__sql_integ_test"
-	db1 := sqorc.OpenCleanForTest(t, dbName, sqorc.PostgresDriver)
-	db2 := sqorc.OpenForTest(t, dbName, sqorc.PostgresDriver)
+	db1 := test.OpenCleanForTest(t, dbName, sqorc.PostgresDriver)
+	db2 := test.OpenForTest(t, dbName, sqorc.PostgresDriver)
 	defer db1.Close()
 	defer db2.Close()
 	_, err := db1.Exec("DROP TABLE IF EXISTS testcontroller_tests")

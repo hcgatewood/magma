@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// File registry.go provides a metrics exporter registry by forwarding calls to
+// File service_registry.go provides a metrics exporter registry by forwarding calls to
 // the service registry.
 
 package metricsd
@@ -19,12 +19,12 @@ package metricsd
 import (
 	"magma/orc8r/cloud/go/orc8r"
 	"magma/orc8r/cloud/go/services/metricsd/exporters"
-	"magma/orc8r/lib/go/registry"
+	"magma/orc8r/cloud/go/services/service_registry"
 )
 
 // GetMetricsExporters returns all registered metrics exporters.
 func GetMetricsExporters() ([]exporters.Exporter, error) {
-	services, err := registry.FindServices(orc8r.MetricsExporterLabel)
+	services, err := service_registry.FindServices(orc8r.MetricsExporterLabel)
 	if err != nil {
 		return []exporters.Exporter{}, err
 	}

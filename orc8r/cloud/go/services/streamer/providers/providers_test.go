@@ -24,11 +24,11 @@ import (
 	configurator_test_init "magma/orc8r/cloud/go/services/configurator/test_init"
 	"magma/orc8r/cloud/go/services/orchestrator/servicers"
 	orchestrator_test_init "magma/orc8r/cloud/go/services/orchestrator/test_init"
+	"magma/orc8r/cloud/go/services/service_registry"
 	"magma/orc8r/cloud/go/services/streamer"
 	streamer_test_init "magma/orc8r/cloud/go/services/streamer/test_init"
 	"magma/orc8r/cloud/go/services/streamer/test_utils/mconfig/test_protos"
 	"magma/orc8r/lib/go/protos"
-	"magma/orc8r/lib/go/registry"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes"
@@ -58,7 +58,7 @@ func TestMconfigStreamer_Configurator(t *testing.T) {
 	_, err = configurator.CreateEntity("n1", configurator.NetworkEntity{Type: orc8r.MagmadGatewayType, Key: "gw1", PhysicalID: "hw1"}, serdes.Entity)
 	assert.NoError(t, err)
 
-	conn, err := registry.GetConnection(streamer.ServiceName)
+	conn, err := service_registry.GetConnection(streamer.ServiceName)
 	assert.NoError(t, err)
 	streamerClient := protos.NewStreamerClient(conn)
 

@@ -14,18 +14,15 @@
 package main
 
 import (
-	"os"
-
 	"magma/orc8r/cloud/go/orc8r"
 	"magma/orc8r/cloud/go/service"
+	"magma/orc8r/cloud/go/services/service_registry"
+	"magma/orc8r/cloud/go/services/service_registry/protos"
 	"magma/orc8r/cloud/go/services/service_registry/servicers"
-	"magma/orc8r/lib/go/protos"
-	"magma/orc8r/lib/go/registry"
 
-	"github.com/docker/docker/client"
 	"github.com/golang/glog"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
+	k8s_client "k8s.io/client-go/rest"
 )
 
 const (
@@ -34,51 +31,37 @@ const (
 )
 
 func main() {
-	srv, err := service.NewOrchestratorService(orc8r.ModuleName, registry.ServiceRegistryServiceName)
+	srv, err := service.NewOrchestratorService(orc8r.ModuleName, service_registry.ServiceName)
 	if err != nil {
-		glog.Fatalf("Error creating service registry service %s", err)
+		glog.Fatalf("Error creating service_registry service %+v", err)
 	}
-	registryModeEnvValue := os.Getenv(registry.ServiceRegistryModeEnvVar)
-	switch registryModeEnvValue {
-	case registry.DockerRegistryMode:
-		glog.Infof("Registry Mode set to %s. Creating Docker service registry", registry.DockerRegistryMode)
-		dockerCli, err := client.NewEnvClient()
-		if err != nil {
-			glog.Fatalf("Error creating docker client for service registry servicer: %s", err)
-		}
-		servicer := servicers.NewDockerServiceRegistryServicer(dockerCli)
-		protos.RegisterServiceRegistryServer(srv.GrpcServer, servicer)
-	case registry.K8sRegistryMode:
-		glog.Infof("Registry Mode set to %s. Creating k8s service registry", registry.K8sRegistryMode)
-		config, err := getK8sClientConfig()
-		if err != nil {
-			glog.Fatalf("Error querying kubernetes config: %s", err)
-		}
-		clientset, err := kubernetes.NewForConfig(config)
-		if err != nil {
-			glog.Fatalf("Error creating kubernetes clientset: %s", err)
-		}
-		servicer, err := servicers.NewKubernetesServiceRegistryServicer(clientset.CoreV1())
-		if err != nil {
-			glog.Fatal(err)
-		}
-		protos.RegisterServiceRegistryServer(srv.GrpcServer, servicer)
-	default:
-		glog.Infof("Registry Mode set to %s. Not creating service registry servicer", registryModeEnvValue)
+
+	config, err := getK8sClientConfig()
+	if err != nil {
+		glog.Fatalf("Error querying k8s config: %+v", err)
 	}
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		glog.Fatalf("Error creating k8s clientset: %+v", err)
+	}
+	servicer, err := servicers.NewK8sServiceRegistryServicer(clientset.CoreV1())
+	if err != nil {
+		glog.Fatal(err)
+	}
+	protos.RegisterServiceRegistryServer(srv.GrpcServer, servicer)
+
 	err = srv.Run()
 	if err != nil {
-		glog.Fatalf("Error while running service: %s", err)
+		glog.Fatalf("Error while running service_registry service: %+v", err)
 	}
 }
 
-func getK8sClientConfig() (*rest.Config, error) {
-	config, err := rest.InClusterConfig()
+func getK8sClientConfig() (*k8s_client.Config, error) {
+	config, err := k8s_client.InClusterConfig()
 	if err != nil {
 		return nil, err
 	}
-	// TODO: Remove QPS and Burst overrides after service registry cache
-	// is implemented.
+	// TODO(hcgatewood): remove QPS and Burst overrides after adding cache.
 	config.QPS = defaultK8sQPS
 	config.Burst = defaultK8sBurst
 	return config, err

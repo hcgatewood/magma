@@ -14,20 +14,20 @@ package servicers_test
 import (
 	"testing"
 
+	edge_hub "github.com/facebookincubator/prometheus-edge-hub/grpc"
+	prometheus_models "github.com/prometheus/client_model/go"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+
 	"magma/orc8r/cloud/go/orc8r"
+	"magma/orc8r/cloud/go/service/test"
 	"magma/orc8r/cloud/go/services/metricsd"
 	"magma/orc8r/cloud/go/services/metricsd/exporters"
 	tests "magma/orc8r/cloud/go/services/metricsd/test_common"
 	"magma/orc8r/cloud/go/services/metricsd/test_init"
 	"magma/orc8r/cloud/go/services/orchestrator/servicers"
 	"magma/orc8r/cloud/go/services/orchestrator/servicers/mocks"
-	"magma/orc8r/cloud/go/test_utils"
-	"magma/orc8r/lib/go/registry"
-
-	edge_hub "github.com/facebookincubator/prometheus-edge-hub/grpc"
-	prometheus_models "github.com/prometheus/client_model/go"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
+	"magma/orc8r/cloud/go/services/service_registry"
 )
 
 const (
@@ -123,11 +123,11 @@ func TestGRPCExporter(t *testing.T) {
 // The returned exporter forwards to the metrics exporter, which in turn
 // forwards to the edge hub.
 func makeExporter(t *testing.T, mockEdge edge_hub.MetricsControllerServer) exporters.Exporter {
-	edgeSrv, lis := test_utils.NewTestService(t, orc8r.ModuleName, edgeControllerServiceName)
+	edgeSrv, lis := test.NewService(t, orc8r.ModuleName, edgeControllerServiceName)
 	edge_hub.RegisterMetricsControllerServer(edgeSrv.GrpcServer, mockEdge)
-	go edgeSrv.RunTest(lis)
+	go edgeSrv.MustRunTest(t, lis)
 
-	edgeAddr, err := registry.GetServiceAddress(edgeControllerServiceName)
+	edgeAddr, err := service_registry.GetAddress(edgeControllerServiceName)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, edgeAddr)
 

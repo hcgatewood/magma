@@ -897,8 +897,7 @@ func seedCwfNetworks(t *testing.T) {
 }
 
 func reportSubscriberDirectoryRecord(t *testing.T, ctx context.Context, id string, req *directorydTypes.DirectoryRecord) {
-	client, err := state.GetStateClient()
-	assert.NoError(t, err)
+	client := state.GetGatewayClientForTest(t)
 
 	serializedRecord, err := serde.Serialize(req, orc8r.DirectoryRecordType, serdes.State)
 	assert.NoError(t, err)
@@ -918,8 +917,7 @@ func reportSubscriberDirectoryRecord(t *testing.T, ctx context.Context, id strin
 }
 
 func reportHaPairStatus(t *testing.T, ctx context.Context, pairID string, req *models2.CarrierWifiHaPairStatus) {
-	client, err := state.GetStateClient()
-	assert.NoError(t, err)
+	client := state.GetGatewayClientForTest(t)
 
 	serializedRecord, err := serde.Serialize(req, cwf.CwfHAPairStatusType, serdes.State)
 	assert.NoError(t, err)
@@ -939,8 +937,7 @@ func reportHaPairStatus(t *testing.T, ctx context.Context, pairID string, req *m
 }
 
 func reportGatewayHealthStatus(t *testing.T, ctx context.Context, gatewayID string, req *models2.CarrierWifiGatewayHealthStatus) {
-	client, err := state.GetStateClient()
-	assert.NoError(t, err)
+	client := state.GetGatewayClientForTest(t)
 
 	serializedRecord, err := serde.Serialize(req, cwf.CwfGatewayHealthType, serdes.State)
 	assert.NoError(t, err)

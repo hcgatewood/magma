@@ -15,27 +15,17 @@ package state
 
 import (
 	"context"
-
-	"magma/orc8r/cloud/go/serde"
-	state_types "magma/orc8r/cloud/go/services/state/types"
-	merrors "magma/orc8r/lib/go/errors"
-	"magma/orc8r/lib/go/protos"
-	"magma/orc8r/lib/go/registry"
+	"testing"
 
 	"github.com/golang/glog"
 	"github.com/thoas/go-funk"
-)
 
-// GetStateClient returns a client to the state service.
-func GetStateClient() (protos.StateServiceClient, error) {
-	conn, err := registry.GetConnection(ServiceName)
-	if err != nil {
-		initErr := merrors.NewInitError(err, ServiceName)
-		glog.Error(initErr)
-		return nil, initErr
-	}
-	return protos.NewStateServiceClient(conn), nil
-}
+	"magma/orc8r/cloud/go/serde"
+	"magma/orc8r/cloud/go/services/service_registry"
+	state_types "magma/orc8r/cloud/go/services/state/types"
+	merrors "magma/orc8r/lib/go/errors"
+	"magma/orc8r/lib/go/protos"
+)
 
 // GetState returns the state specified by the networkID, typeVal, and hwID.
 func GetState(networkID string, typ string, hwID string, serdes serde.Registry) (state_types.State, error) {
@@ -60,7 +50,7 @@ func GetStates(networkID string, stateIDs state_types.IDs, serdes serde.Registry
 		return state_types.StatesByID{}, nil
 	}
 
-	client, err := GetStateClient()
+	client, err := GetClient()
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +74,7 @@ func GetStates(networkID string, stateIDs state_types.IDs, serdes serde.Registry
 // the keyFilter argument.
 // e.g.: ["t1", "t2"], ["k1", "k2"] => (t1 OR t2) AND (k1 OR k2)
 func SearchStates(networkID string, typeFilter []string, keyFilter []string, keyPrefix *string, serdes serde.Registry) (state_types.StatesByID, error) {
-	client, err := GetStateClient()
+	client, err := GetClient()
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +99,7 @@ func SearchStates(networkID string, typeFilter []string, keyFilter []string, key
 // DeleteStates deletes states specified by the networkID and a list of
 // type and key.
 func DeleteStates(networkID string, stateIDs state_types.IDs) error {
-	client, err := GetStateClient()
+	client, err := GetClient()
 	if err != nil {
 		return err
 	}
@@ -130,7 +120,7 @@ func GetSerializedStates(networkID string, stateIDs state_types.IDs) (state_type
 		return state_types.SerializedStatesByID{}, nil
 	}
 
-	client, err := GetStateClient()
+	client, err := GetClient()
 	if err != nil {
 		return nil, err
 	}
@@ -153,4 +143,24 @@ func makeProtoIDs(stateIDs state_types.IDs) []*protos.StateID {
 		ids = append(ids, &protos.StateID{Type: st.Type, DeviceID: st.DeviceID})
 	}
 	return ids
+}
+
+func GetClient() (protos.StateServiceClient, error) {
+	conn, err := service_registry.GetConnection(ServiceName)
+	if err != nil {
+		initErr := merrors.NewInitError(err, ServiceName)
+		glog.Error(initErr)
+		return nil, initErr
+	}
+	return protos.NewStateServiceClient(conn), nil
+}
+
+// GetGatewayClientForTest returns a client to the state service, emulating
+// a connection from a gateway.
+func GetGatewayClientForTest(t *testing.T) protos.StateServiceClient {
+	if t == nil {
+		panic("for tests only")
+	}
+	conn := service_registry.GetGatewayConnectionForTest(t, ServiceName)
+	return protos.NewStateServiceClient(conn)
 }

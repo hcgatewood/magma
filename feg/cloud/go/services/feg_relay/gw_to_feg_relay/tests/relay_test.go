@@ -22,6 +22,7 @@ import (
 	"time"
 
 	models2 "magma/feg/cloud/go/services/feg/obsidian/models"
+	"magma/orc8r/cloud/go/service/test"
 
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/metadata"
@@ -41,7 +42,6 @@ import (
 	"magma/orc8r/cloud/go/services/orchestrator/obsidian/models"
 	service_test_utils "magma/orc8r/cloud/go/services/state/test_utils"
 	"magma/orc8r/cloud/go/storage"
-	"magma/orc8r/cloud/go/test_utils"
 	"magma/orc8r/lib/go/protos"
 	"magma/orc8r/lib/go/registry"
 )
@@ -101,7 +101,7 @@ func TestNHRouting(t *testing.T) {
 	//
 	// Start & register Serving FeG's test S6a Proxy Server
 	s6aProxy := &testS6aProxy{resultChan: make(chan string, 3)}
-	srv, lis := test_utils.NewTestService(t, "feg", s6aProxyService)
+	srv, lis := test.NewService(t, "feg", s6aProxyService)
 	s6aAddr := lis.Addr().(*net.TCPAddr)
 	s6aHost := "localhost"
 	t.Logf("Serving FeG S6a Proxy Address: %s", s6aAddr)
@@ -111,7 +111,7 @@ func TestNHRouting(t *testing.T) {
 	// Register FeG's test Hello Server
 	feg_protos.RegisterHelloServer(srv.GrpcServer, &testHelloServer{})
 
-	go srv.RunTest(lis)
+	go srv.MustRunTest(t, lis)
 
 	// Add Serving FeG Host to directoryd
 	directoryd_test_init.StartTestService(t)
@@ -119,14 +119,14 @@ func TestNHRouting(t *testing.T) {
 	gateway_registry.SetPort(s6aAddr.Port)
 
 	// Start S6a relay Service
-	relaySrv, relayLis := test_utils.NewTestService(t, "", s6aProxyService)
+	relaySrv, relayLis := test.NewService(t, "", s6aProxyService)
 
 	t.Logf("Relay S6a Proxy Address: %s", relayLis.Addr())
 
 	relayRouter := servicers.NewRelayRouter()
 	feg_protos.RegisterS6AProxyServer(relaySrv.GrpcServer, relayRouter)
 	feg_protos.RegisterHelloServer(relaySrv.GrpcServer, relayRouter)
-	go relaySrv.RunTest(relayLis)
+	go relaySrv.MustRunTest(t, relayLis)
 
 	ctx := service_test_utils.GetContextWithCertificate(t, agwHwId)
 	connectCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

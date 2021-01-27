@@ -29,6 +29,7 @@ import (
 	"magma/orc8r/cloud/go/services/state/indexer/mocks"
 	"magma/orc8r/cloud/go/services/state/indexer/reindex"
 	"magma/orc8r/cloud/go/sqorc"
+	"magma/orc8r/cloud/go/sqorc/test"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -375,7 +376,7 @@ func TestSQLJobQueue_Integration_IndexerVersions(t *testing.T) {
 
 func initSQLTest(t *testing.T, dbName string) reindex.JobQueue {
 	indexer.DeregisterAllForTest(t)
-	db := sqorc.OpenCleanForTest(t, dbName, sqorc.PostgresDriver)
+	db := test.OpenCleanForTest(t, dbName, sqorc.PostgresDriver)
 
 	q := reindex.NewSQLJobQueue(twoAttempts, db, sqorc.GetSqlBuilder())
 	err := q.Initialize()

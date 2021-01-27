@@ -16,9 +16,9 @@ package tenants
 import (
 	"context"
 
+	"magma/orc8r/cloud/go/services/service_registry"
 	merrors "magma/orc8r/lib/go/errors"
 	"magma/orc8r/lib/go/protos"
-	srvRegistry "magma/orc8r/lib/go/registry"
 
 	"github.com/golang/glog"
 	"google.golang.org/grpc/codes"
@@ -28,7 +28,7 @@ import (
 // getTenantsClient is a utility function to get a RPC connection to the
 // tenants service
 func getTenantsClient() (protos.TenantsServiceClient, error) {
-	conn, err := srvRegistry.GetConnection(ServiceName)
+	conn, err := service_registry.GetConnection(ServiceName)
 	if err != nil {
 		initErr := merrors.NewInitError(err, ServiceName)
 		glog.Error(initErr)

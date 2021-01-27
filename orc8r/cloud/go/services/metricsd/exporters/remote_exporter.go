@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"magma/orc8r/cloud/go/services/metricsd/protos"
+	"magma/orc8r/cloud/go/services/service_registry"
 	merrors "magma/orc8r/lib/go/errors"
-	"magma/orc8r/lib/go/registry"
 
 	"github.com/golang/glog"
 )
@@ -23,7 +23,7 @@ func NewRemoteExporter(serviceName string) Exporter {
 }
 
 func (r *remoteExporter) Submit(metrics []MetricAndContext) error {
-	c, err := r.getExporterClient()
+	c, err := r.getClient()
 	if err != nil {
 		return err
 	}
@@ -31,8 +31,8 @@ func (r *remoteExporter) Submit(metrics []MetricAndContext) error {
 	return err
 }
 
-func (r *remoteExporter) getExporterClient() (protos.MetricsExporterClient, error) {
-	conn, err := registry.GetConnection(r.service)
+func (r *remoteExporter) getClient() (protos.MetricsExporterClient, error) {
+	conn, err := service_registry.GetConnection(r.service)
 	if err != nil {
 		initErr := merrors.NewInitError(err, r.service)
 		glog.Error(initErr)

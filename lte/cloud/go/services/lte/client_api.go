@@ -22,8 +22,8 @@ import (
 	lte_models "magma/lte/cloud/go/services/lte/obsidian/models"
 	"magma/lte/cloud/go/services/lte/protos"
 	"magma/orc8r/cloud/go/serde"
+	"magma/orc8r/cloud/go/services/service_registry"
 	merrors "magma/orc8r/lib/go/errors"
-	"magma/orc8r/lib/go/registry"
 
 	"github.com/golang/glog"
 )
@@ -73,7 +73,7 @@ func SetEnodebState(networkID string, gatewayID string, enodebSN string, seriali
 }
 
 func getClient() (protos.EnodebStateLookupClient, error) {
-	conn, err := registry.GetConnection(ServiceName)
+	conn, err := service_registry.GetConnection(ServiceName)
 	if err != nil {
 		initErr := merrors.NewInitError(err, ServiceName)
 		glog.Error(initErr)

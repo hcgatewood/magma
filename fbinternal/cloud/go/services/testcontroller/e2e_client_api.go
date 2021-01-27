@@ -20,14 +20,14 @@ import (
 	"magma/fbinternal/cloud/go/services/testcontroller/statemachines"
 	"magma/fbinternal/cloud/go/services/testcontroller/storage"
 	"magma/orc8r/cloud/go/serde"
+	"magma/orc8r/cloud/go/services/service_registry"
 	merrors "magma/orc8r/lib/go/errors"
-	"magma/orc8r/lib/go/registry"
 
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 )
 
-// UnmarshalledTestCase encapsulates a TestCase and the unmarshaled
+// UnmarshalledTestCase encapsulates a TestCase and the unmarshalled
 // representation of its TestConfig field.
 type UnmarshalledTestCase struct {
 	*storage.TestCase
@@ -35,7 +35,7 @@ type UnmarshalledTestCase struct {
 }
 
 func getE2EClient() (protos.TestControllerClient, error) {
-	conn, err := registry.GetConnection(ServiceName)
+	conn, err := service_registry.GetConnection(ServiceName)
 	if err != nil {
 		initErr := merrors.NewInitError(err, ServiceName)
 		glog.Error(initErr)

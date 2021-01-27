@@ -16,19 +16,20 @@ package test_init
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"magma/cwf/cloud/go/protos"
 	"magma/cwf/gateway/registry"
 	"magma/cwf/gateway/services/uesim/servicers"
-	"magma/orc8r/cloud/go/test_utils"
-
-	"github.com/stretchr/testify/assert"
+	"magma/orc8r/cloud/go/blobstore/test"
+	"magma/orc8r/cloud/go/service"
 )
 
 func StartTestService(t *testing.T) {
-	factory := test_utils.NewSQLBlobstore(t, "uesim_test_service_blobstore")
-	srv, lis := test_utils.NewTestService(t, registry.ModuleName, registry.UeSim)
+	factory := test.NewSQLBlobstore(t, "uesim_test_service_blobstore")
+	srv, lis := service.NewTestService(t, registry.ModuleName, registry.UeSim)
 	server, err := servicers.NewUESimServer(factory)
 	assert.NoError(t, err)
 	protos.RegisterUESimServer(srv.GrpcServer, server)
-	go srv.RunTest(lis)
+	go srv.MustRunTest(t, lis)
 }

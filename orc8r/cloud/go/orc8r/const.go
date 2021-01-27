@@ -30,6 +30,13 @@ const (
 
 	CallTraceEntityType = "call_trace"
 
+	// GRPCServicePort is the default port where services expose their gRPC
+	// servicers.
+	GRPCServicePort = 9180
+	// HTTPServerPort is the default port where services expose their HTTP
+	// server.
+	HTTPServerPort = 8080
+
 	// ServiceHostnameEnvVar is the name of an environment variable which is
 	// required to hold the public IP of the service.
 	// In dev, this will generally be localhost.

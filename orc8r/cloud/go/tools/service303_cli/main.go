@@ -22,7 +22,7 @@ import (
 	"magma/orc8r/cloud/go/plugin"
 	"magma/orc8r/cloud/go/services/configurator"
 	"magma/orc8r/cloud/go/services/dispatcher/gateway_registry"
-	"magma/orc8r/lib/go/registry"
+	"magma/orc8r/cloud/go/services/service_registry"
 
 	"github.com/spf13/cobra"
 )
@@ -43,10 +43,10 @@ var gatewayID string
 func main() {
 	flag.Parse()
 	plugin.LoadAllPluginsFatalOnError(&plugin.DefaultOrchestratorPluginLoader{})
-	registry.MustPopulateServices()
+	service_registry.MustPopulateServices()
 
 	var err error
-	services, err = registry.ListAllServices()
+	services, err = service_registry.ListAllServices()
 	if err != nil {
 		fmt.Printf("An error occurred while retrieving services: %s\n", err)
 		os.Exit(2)

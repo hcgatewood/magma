@@ -22,8 +22,9 @@ import (
 	"magma/fbinternal/cloud/go/services/testcontroller/servicers"
 	"magma/fbinternal/cloud/go/services/testcontroller/storage"
 	"magma/orc8r/cloud/go/orc8r"
+	"magma/orc8r/cloud/go/service/test"
 	"magma/orc8r/cloud/go/sqorc"
-	"magma/orc8r/cloud/go/test_utils"
+	sqorc_test "magma/orc8r/cloud/go/sqorc/test"
 	"magma/orc8r/lib/go/definitions"
 
 	_ "github.com/lib/pq"
@@ -35,10 +36,10 @@ func StartTestService(t *testing.T) {
 }
 
 func StartTestServiceWithDB(t *testing.T, dbName string) {
-	srv, lis := test_utils.NewTestService(t, orc8r.ModuleName, testcontroller.ServiceName)
+	srv, lis := test.NewService(t, orc8r.ModuleName, testcontroller.ServiceName)
 
 	// Connect to postgres_test
-	db := sqorc.OpenCleanForTest(t, dbName, sqorc.PostgresDriver)
+	db := sqorc_test.OpenCleanForTest(t, dbName, sqorc.PostgresDriver)
 
 	nodeStore := storage.NewSQLNodeLeasorStorage(db, &mockIDGenerator{}, sqorc.GetSqlBuilder())
 	err := nodeStore.Init()
@@ -54,7 +55,7 @@ func StartTestServiceWithDB(t *testing.T, dbName string) {
 
 	go func() {
 		defer db.Close()
-		srv.RunTest(lis)
+		srv.MustRunTest(t, lis)
 	}()
 }
 

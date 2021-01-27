@@ -21,11 +21,10 @@ import (
 
 	cwfprotos "magma/cwf/cloud/go/protos"
 	"magma/cwf/gateway/registry"
+	"magma/cwf/gateway/services/uesim/servicers"
 	fegprotos "magma/feg/cloud/go/protos"
 	"magma/lte/cloud/go/services/policydb/obsidian/models"
-	"magma/orc8r/cloud/go/test_utils"
-
-	"magma/cwf/gateway/services/uesim/servicers"
+	"magma/orc8r/cloud/go/blobstore/test"
 
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/context"
@@ -105,7 +104,7 @@ func setupHssLessTestEnv(t *testing.T) (*servicers.UESimServerHssLess, error) {
 
 	registry.AddService("SESSIOND", "127.0.0.1", 50065)
 
-	store := test_utils.NewSQLBlobstore(t, "hssless_test_blobstore")
+	store := test.NewSQLBlobstore(t, "hssless_test_blobstore")
 	server, err := servicers.NewUESimServerHssLess(store)
 	return server, err
 }

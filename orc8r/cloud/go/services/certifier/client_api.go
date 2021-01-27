@@ -19,9 +19,9 @@ import (
 
 	"magma/orc8r/cloud/go/clock"
 	certifierprotos "magma/orc8r/cloud/go/services/certifier/protos"
+	"magma/orc8r/cloud/go/services/service_registry"
 	merrors "magma/orc8r/lib/go/errors"
 	"magma/orc8r/lib/go/protos"
-	"magma/orc8r/lib/go/registry"
 
 	"github.com/golang/glog"
 	"github.com/golang/protobuf/ptypes"
@@ -33,7 +33,7 @@ const ServiceName = "CERTIFIER"
 
 // Utility function to get a RPC connection to the certifier service
 func getCertifierClient() (certifierprotos.CertifierClient, error) {
-	conn, err := registry.GetConnection(ServiceName)
+	conn, err := service_registry.GetConnection(ServiceName)
 	if err != nil {
 		return nil, merrors.NewInitError(err, ServiceName)
 	}

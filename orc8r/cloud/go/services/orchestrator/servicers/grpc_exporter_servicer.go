@@ -15,6 +15,7 @@ import (
 	"context"
 
 	"magma/orc8r/cloud/go/services/metricsd/protos"
+	"magma/orc8r/cloud/go/services/service_registry"
 	"magma/orc8r/lib/go/registry"
 
 	edge_hub "github.com/facebookincubator/prometheus-edge-hub/grpc"
@@ -24,7 +25,7 @@ import (
 )
 
 const (
-	serviceName = "grpc_metrics_exporter"
+	targetServiceName = "grpc_metrics_exporter"
 
 	grpcMaxMsgSize = 1024 * 1024 * 1024 // 1 Gb
 )
@@ -41,14 +42,14 @@ type GRPCPushExporterServicer struct {
 	// registry is the servicer's local service registry.
 	// Local registry since the gRPC servicer is not a proper Orchestrator
 	// service.
-	registry *registry.ServiceRegistry
+	registry service_registry.Registry
 }
 
 // NewGRPCPushExporterServicer returns an exporter pushing metrics to
 // prometheus-edge-hubs at the given addresses.
 func NewGRPCPushExporterServicer(pushAddr string) protos.MetricsExporterServer {
-	srv := &GRPCPushExporterServicer{registry: registry.NewWithMode(registry.YamlRegistryMode)}
-	srv.registry.AddService(registry.ServiceLocation{Name: serviceName, Host: pushAddr})
+	srv := &GRPCPushExporterServicer{registry: service_registry.NewYAMLRegistry()}
+	srv.registry.AddServices(registry.ServiceLocation{Name: targetServiceName, Host: pushAddr})
 	return srv
 }
 
@@ -74,7 +75,7 @@ func (s *GRPCPushExporterServicer) pushFamilies(families []*io_prometheus_client
 }
 
 func (s *GRPCPushExporterServicer) getClient() (edge_hub.MetricsControllerClient, error) {
-	conn, err := s.registry.GetConnectionWithOptions(serviceName, dialOpts...)
+	conn, err := registry.GetServiceConnection(targetServiceName, s.registry, dialOpts)
 	if err != nil {
 		return nil, errors.Wrap(err, "get exporter client connection")
 	}

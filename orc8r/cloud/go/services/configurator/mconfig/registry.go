@@ -18,12 +18,12 @@ package mconfig
 
 import (
 	"magma/orc8r/cloud/go/orc8r"
-	"magma/orc8r/lib/go/registry"
+	"magma/orc8r/cloud/go/services/service_registry"
 )
 
 // GetBuilders returns all registered mconfig builders.
 func GetBuilders() ([]Builder, error) {
-	services, err := registry.FindServices(orc8r.MconfigBuilderLabel)
+	services, err := service_registry.FindServices(orc8r.MconfigBuilderLabel)
 	if err != nil {
 		return []Builder{}, err
 	}

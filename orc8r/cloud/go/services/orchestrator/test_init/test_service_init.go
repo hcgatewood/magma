@@ -17,13 +17,13 @@ import (
 	"testing"
 
 	"magma/orc8r/cloud/go/orc8r"
+	"magma/orc8r/cloud/go/service/test"
 	builder_protos "magma/orc8r/cloud/go/services/configurator/mconfig/protos"
 	"magma/orc8r/cloud/go/services/orchestrator"
 	"magma/orc8r/cloud/go/services/orchestrator/servicers"
 	indexer_protos "magma/orc8r/cloud/go/services/state/protos"
 	streamer_protos "magma/orc8r/cloud/go/services/streamer/protos"
 	streamer_servicers "magma/orc8r/cloud/go/services/streamer/servicers"
-	"magma/orc8r/cloud/go/test_utils"
 	"magma/orc8r/lib/go/definitions"
 	"magma/orc8r/lib/go/protos"
 )
@@ -57,7 +57,7 @@ func StartTestServiceInternal(
 		annotations[orc8r.StreamProviderStreamsAnnotation] = definitions.MconfigStreamName
 	}
 
-	srv, lis := test_utils.NewTestOrchestratorService(t, orc8r.ModuleName, orchestrator.ServiceName, labels, annotations)
+	srv, lis := test.NewOrchestratorService(t, orc8r.ModuleName, orchestrator.ServiceName, labels, annotations)
 	protos.RegisterStreamerServer(srv.GrpcServer, &testStreamerServer{})
 
 	if builder != nil {
@@ -70,5 +70,5 @@ func StartTestServiceInternal(
 		streamer_protos.RegisterStreamProviderServer(srv.GrpcServer, provider)
 	}
 
-	go srv.RunTest(lis)
+	go srv.RunTest(t, lis)
 }

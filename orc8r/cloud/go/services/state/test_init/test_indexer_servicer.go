@@ -20,10 +20,10 @@ import (
 	"testing"
 
 	"magma/orc8r/cloud/go/orc8r"
+	"magma/orc8r/cloud/go/service/test"
 	"magma/orc8r/cloud/go/services/state/indexer"
 	"magma/orc8r/cloud/go/services/state/protos"
 	"magma/orc8r/cloud/go/services/state/types"
-	"magma/orc8r/cloud/go/test_utils"
 )
 
 type indexerServicer struct {
@@ -39,10 +39,10 @@ func StartNewTestIndexer(t *testing.T, idx indexer.Indexer) {
 		orc8r.StateIndexerVersionAnnotation: strconv.Itoa(int(idx.GetVersion())),
 		orc8r.StateIndexerTypesAnnotation:   strings.Join(idx.GetTypes(), orc8r.AnnotationFieldSeparator),
 	}
-	srv, lis := test_utils.NewTestOrchestratorService(t, orc8r.ModuleName, idx.GetID(), labels, annotations)
+	srv, lis := test.NewOrchestratorService(t, orc8r.ModuleName, idx.GetID(), labels, annotations)
 	servicer := &indexerServicer{idx: idx}
 	protos.RegisterIndexerServer(srv.GrpcServer, servicer)
-	go srv.RunTest(lis)
+	go srv.RunTest(t, lis)
 }
 
 func (i *indexerServicer) GetIndexerInfo(ctx context.Context, req *protos.GetIndexerInfoRequest) (*protos.GetIndexerInfoResponse, error) {

@@ -19,13 +19,13 @@ import (
 	"sync"
 	"time"
 
+	"magma/orc8r/cloud/go/services/service_registry"
 	orc8rregistry "magma/orc8r/lib/go/registry"
 
 	"google.golang.org/grpc"
 )
 
 const (
-	GrpcMaxDelaySec   = 10
 	GrpcMaxTimeoutSec = 10
 )
 
@@ -37,14 +37,14 @@ type ConnectionRegistry interface {
 
 type k8sConnectionRegistry struct {
 	sync.RWMutex
-	*orc8rregistry.ServiceRegistry
+	service_registry.Registry
 }
 
 // NewK8sConnectionRegistry creates and initializes a connection registry.
 func NewK8sConnectionRegistry() *k8sConnectionRegistry {
 	return &k8sConnectionRegistry{
-		sync.RWMutex{},
-		orc8rregistry.New(),
+		RWMutex:  sync.RWMutex{},
+		Registry: service_registry.NewRegistry(),
 	}
 }
 
@@ -63,12 +63,12 @@ func (r *k8sConnectionRegistry) GetConnection(service string, port int) (*grpc.C
 		// Here we map svc:port -> addr (svc:port) in the registry to ensure
 		// that the connections will work properly even if service port changes
 		loc := orc8rregistry.ServiceLocation{Name: serviceAddr, Host: service, Port: port}
-		r.AddService(loc)
+		r.AddServices(loc)
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), GrpcMaxTimeoutSec*time.Second)
 	defer cancel()
 
-	return r.GetConnectionImpl(ctx, serviceAddr)
+	return service_registry.GetConnectionWithOptions(ctx, serviceAddr)
 }
 
 func doesServiceExist(serviceList []string, service string) bool {

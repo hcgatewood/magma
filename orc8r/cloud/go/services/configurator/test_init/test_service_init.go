@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"magma/orc8r/cloud/go/orc8r"
+	"magma/orc8r/cloud/go/service/test"
 	accessd_test_init "magma/orc8r/cloud/go/services/accessd/test_init"
 	certifier_test_init "magma/orc8r/cloud/go/services/certifier/test_init"
 	"magma/orc8r/cloud/go/services/configurator"
@@ -26,7 +27,6 @@ import (
 	"magma/orc8r/cloud/go/services/configurator/servicers"
 	"magma/orc8r/cloud/go/services/configurator/storage"
 	"magma/orc8r/cloud/go/sqorc"
-	"magma/orc8r/cloud/go/test_utils"
 )
 
 func StartTestService(t *testing.T) {
@@ -44,7 +44,7 @@ func StartTestService(t *testing.T) {
 	accessd_test_init.StartTestService(t)
 	certifier_test_init.StartTestService(t)
 
-	srv, lis := test_utils.NewTestService(t, orc8r.ModuleName, configurator.ServiceName)
+	srv, lis := test.NewService(t, orc8r.ModuleName, configurator.ServiceName)
 	nb, err := servicers.NewNorthboundConfiguratorServicer(storageFactory)
 	if err != nil {
 		t.Fatalf("Failed to create NB configurator servicer: %s", err)
@@ -57,7 +57,7 @@ func StartTestService(t *testing.T) {
 	}
 	protos.RegisterSouthboundConfiguratorServer(srv.GrpcServer, sb)
 
-	go srv.RunTest(lis)
+	go srv.MustRunTest(t, lis)
 }
 
 type sequentialIDGenerator struct {

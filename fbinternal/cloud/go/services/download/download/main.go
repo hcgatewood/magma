@@ -5,13 +5,13 @@ import (
 
 	"magma/fbinternal/cloud/go/services/download/servicers"
 	"magma/orc8r/cloud/go/plugin"
-	"magma/orc8r/lib/go/registry"
+	"magma/orc8r/cloud/go/services/service_registry"
 )
 
 func main() {
 	flag.Parse()
 	plugin.LoadAllPluginsFatalOnError(&plugin.DefaultOrchestratorPluginLoader{})
-	registry.MustPopulateServices()
+	service_registry.MustPopulateServices()
 
 	servicers.Run()
 }

@@ -17,8 +17,8 @@ import (
 	"fmt"
 	"strings"
 
+	"magma/orc8r/cloud/go/service/service303"
 	"magma/orc8r/lib/go/protos"
-	"magma/orc8r/lib/go/service/client"
 
 	io_prometheus_client "github.com/prometheus/client_model/go"
 )
@@ -34,7 +34,7 @@ func NewCloudServiceMetricCollector(service string) MetricCollector {
 }
 
 func (c *CloudServiceMetricCollector) GetMetrics() ([]*io_prometheus_client.MetricFamily, error) {
-	container, err := client.Service303GetMetrics(c.service)
+	container, err := service303.GetMetrics(c.service)
 	serviceName := c.service
 	if err != nil {
 		return []*io_prometheus_client.MetricFamily{

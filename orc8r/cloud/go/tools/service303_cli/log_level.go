@@ -18,10 +18,10 @@ import (
 	"fmt"
 	"os"
 
+	"magma/orc8r/cloud/go/service/service303"
 	"magma/orc8r/cloud/go/services/dispatcher/gateway_registry"
-	"magma/orc8r/cloud/go/services/dispatcher/gw_client_apis/service303"
+	gw_service303 "magma/orc8r/cloud/go/services/dispatcher/gw_client_apis/service303"
 	"magma/orc8r/lib/go/protos"
-	"magma/orc8r/lib/go/service/client"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
@@ -78,9 +78,9 @@ func setLogLevel(service string, logLevel string) error {
 
 func setLogLevelOrGwLogLevel(service string, logLevel string) error {
 	if isGatewayServiceQuery {
-		return service303.GWService303SetLogLevel(gateway_registry.GwServiceType(service), hardwareID, &protos.LogLevelMessage{Level: protos.LogLevel(protos.LogLevel_value[logLevel])})
+		return gw_service303.GWService303SetLogLevel(gateway_registry.GwServiceType(service), hardwareID, &protos.LogLevelMessage{Level: protos.LogLevel(protos.LogLevel_value[logLevel])})
 	} else {
-		return client.Service303SetLogLevel(service, &protos.LogLevelMessage{Level: protos.LogLevel(protos.LogLevel_value[logLevel])})
+		return service303.SetLogLevel(service, &protos.LogLevelMessage{Level: protos.LogLevel(protos.LogLevel_value[logLevel])})
 	}
 }
 

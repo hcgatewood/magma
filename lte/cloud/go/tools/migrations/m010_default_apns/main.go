@@ -63,10 +63,10 @@ import (
 	"magma/lte/cloud/go/tools/migrations/m010_default_apns/types"
 	"magma/orc8r/cloud/go/serde"
 	"magma/orc8r/cloud/go/services/configurator"
+	"magma/orc8r/cloud/go/services/service_registry"
 	"magma/orc8r/cloud/go/sqorc"
 	"magma/orc8r/cloud/go/storage"
 	"magma/orc8r/cloud/go/tools/migrations"
-	"magma/orc8r/lib/go/registry"
 
 	"github.com/Masterminds/squirrel"
 	_ "github.com/go-sql-driver/mysql"
@@ -403,7 +403,7 @@ func mergeGraphs(tx *sql.Tx, builder sqorc.StatementBuilder, gids []string) erro
 //	- Ensures all subscribers have an APN assoc
 //	- Ensure default APN and its subscribers have same graph ID
 func verifyMigration(db *sql.DB, builder sqorc.StatementBuilder) error {
-	registry.MustPopulateServices()
+	service_registry.MustPopulateServices()
 
 	serdes := serde.NewRegistry(
 		configurator.NewNetworkEntityConfigSerde(apnEntType, &types.ApnConfiguration{}),

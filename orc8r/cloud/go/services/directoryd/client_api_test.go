@@ -24,12 +24,12 @@ import (
 	directoryd_test_init "magma/orc8r/cloud/go/services/directoryd/test_init"
 	"magma/orc8r/cloud/go/services/directoryd/types"
 	"magma/orc8r/cloud/go/services/orchestrator/obsidian/models"
+	"magma/orc8r/cloud/go/services/service_registry"
 	"magma/orc8r/cloud/go/services/state"
 	state_test_init "magma/orc8r/cloud/go/services/state/test_init"
 	"magma/orc8r/cloud/go/services/state/test_utils"
 	state_types "magma/orc8r/cloud/go/services/state/types"
 	"magma/orc8r/lib/go/protos"
-	"magma/orc8r/lib/go/registry"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -121,8 +121,7 @@ func TestDirectorydStateMethods(t *testing.T) {
 	directoryd_test_init.StartTestService(t)
 	state_test_init.StartTestService(t)
 
-	stateClient, err := getStateServiceClient(t)
-	assert.NoError(t, err)
+	stateClient := state.GetGatewayClientForTest(t)
 
 	configurator_test_utils.RegisterNetwork(t, nid0, "DirectoryD Service Test")
 	configurator_test_utils.RegisterGateway(t, nid0, hwid0, &models.GatewayDevice{HardwareID: hwid0})
@@ -189,15 +188,14 @@ func TestDirectorydUpdateMethods(t *testing.T) {
 	directoryd_test_init.StartTestService(t)
 	state_test_init.StartTestService(t)
 
-	ddUpdaterClient, err := getDirectorydUpdaterClient(t)
-	assert.NoError(t, err)
+	ddUpdaterClient := getDirectorydUpdaterClient(t)
 
 	configurator_test_utils.RegisterNetwork(t, nid0, "DirectoryD Service Test")
 	configurator_test_utils.RegisterGateway(t, nid0, hwid0, &models.GatewayDevice{HardwareID: hwid0})
 	ctx := test_utils.GetContextWithCertificate(t, hwid0)
 
 	// Empty initially
-	_, err = directoryd.GetHWIDForIMSI(nid0, imsi0)
+	_, err := directoryd.GetHWIDForIMSI(nid0, imsi0)
 	assert.Error(t, err)
 	_, err = directoryd.GetSessionIDForIMSI(nid0, imsi0)
 	assert.Error(t, err)
@@ -245,13 +243,12 @@ func TestDirectorydUpdateMethods(t *testing.T) {
 }
 
 func getStateServiceClient(t *testing.T) (protos.StateServiceClient, error) {
-	conn, err := registry.GetConnection(state.ServiceName)
+	conn, err := service_registry.GetConnection(state.ServiceName)
 	assert.NoError(t, err)
 	return protos.NewStateServiceClient(conn), err
 }
 
-func getDirectorydUpdaterClient(t *testing.T) (protos.GatewayDirectoryServiceClient, error) {
-	conn, err := registry.GetConnection(directoryd.ServiceName)
-	assert.NoError(t, err)
-	return protos.NewGatewayDirectoryServiceClient(conn), err
+func getDirectorydUpdaterClient(t *testing.T) protos.GatewayDirectoryServiceClient {
+	conn := service_registry.GetGatewayConnectionForTest(t, directoryd.ServiceName)
+	return protos.NewGatewayDirectoryServiceClient(conn)
 }

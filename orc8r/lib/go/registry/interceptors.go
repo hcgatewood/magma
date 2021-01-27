@@ -42,8 +42,13 @@ func TimeoutInterceptor(ctx context.Context, method string, req, resp interface{
 
 // CloudClientTimeoutInterceptor is the same as TimeoutInterceptor,
 // but - it also amends outgoing CTX with magic cloud client CSN header
-func CloudClientTimeoutInterceptor(ctx context.Context, method string, req, resp interface{},
-	cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
-
+func CloudClientTimeoutInterceptor(
+	ctx context.Context,
+	method string,
+	req, resp interface{},
+	cc *grpc.ClientConn,
+	invoker grpc.UnaryInvoker,
+	opts ...grpc.CallOption,
+) error {
 	return TimeoutInterceptor(unary.OutgoingCloudClientCtx(ctx), method, req, resp, cc, invoker, opts...)
 }

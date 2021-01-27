@@ -19,6 +19,7 @@ import (
 
 	"magma/feg/gateway/services/eap"
 	"magma/feg/gateway/services/eap/providers/aka"
+	service2 "magma/orc8r/cloud/go/service"
 
 	"golang.org/x/net/context"
 
@@ -26,7 +27,6 @@ import (
 	"magma/feg/gateway/registry"
 	"magma/feg/gateway/services/aaa/protos"
 	"magma/feg/gateway/services/eap/providers/aka/servicers"
-	"magma/orc8r/cloud/go/test_utils"
 )
 
 type testSwxProxy struct{}
@@ -42,7 +42,7 @@ func (s testSwxProxy) Authenticate(
 	return &cp.AuthenticationAnswer{
 		UserName: req.GetUserName(),
 		SipAuthVectors: []*cp.AuthenticationAnswer_SIPAuthVector{
-			&cp.AuthenticationAnswer_SIPAuthVector{
+			{
 				AuthenticationScheme: req.AuthenticationScheme,
 				RandAutn: []byte(
 					"\x01\x23\x45\x67\x89\xab\xcd\xef\x01\x23\x45\x67\x89\xab\xcd\xef" +
@@ -151,10 +151,10 @@ func TestChallengeEAPTemplate(t *testing.T) {
 
 func TestAkaChallenge(t *testing.T) {
 	os.Setenv("USE_REMOTE_SWX_PROXY", "false")
-	srv, lis := test_utils.NewTestService(t, registry.ModuleName, registry.SWX_PROXY)
+	srv, lis := service2.NewTestService(t, registry.ModuleName, registry.SWX_PROXY)
 	var service testSwxProxy
 	cp.RegisterSwxProxyServer(srv.GrpcServer, service)
-	go srv.RunTest(lis)
+	go srv.MustRunTest(t, lis)
 
 	akaSrv, _ := servicers.NewEapAkaService(nil)
 	p, err := identityResponse(akaSrv, &protos.Context{}, eap.Packet(testEapIdentityResp))

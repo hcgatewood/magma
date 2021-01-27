@@ -18,11 +18,11 @@ import (
 
 	"magma/orc8r/cloud/go/blobstore"
 	"magma/orc8r/cloud/go/orc8r"
+	"magma/orc8r/cloud/go/service/test"
 	"magma/orc8r/cloud/go/services/directoryd"
 	"magma/orc8r/cloud/go/services/directoryd/servicers"
 	"magma/orc8r/cloud/go/services/directoryd/storage"
 	"magma/orc8r/cloud/go/sqorc"
-	"magma/orc8r/cloud/go/test_utils"
 	"magma/orc8r/lib/go/protos"
 
 	"github.com/stretchr/testify/assert"
@@ -30,7 +30,7 @@ import (
 
 func StartTestService(t *testing.T) {
 	// Create service
-	srv, lis := test_utils.NewTestService(t, orc8r.ModuleName, directoryd.ServiceName)
+	srv, lis := test.NewService(t, orc8r.ModuleName, directoryd.ServiceName)
 
 	// Init storage
 	db, err := sqorc.Open("sqlite3", ":memory:")
@@ -47,5 +47,5 @@ func StartTestService(t *testing.T) {
 	protos.RegisterGatewayDirectoryServiceServer(srv.GrpcServer, servicers.NewDirectoryUpdateServicer())
 
 	// Run service
-	go srv.RunTest(lis)
+	go srv.MustRunTest(t, lis)
 }

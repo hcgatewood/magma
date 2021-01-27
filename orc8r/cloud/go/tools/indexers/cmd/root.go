@@ -20,9 +20,9 @@ import (
 	"os"
 
 	"magma/orc8r/cloud/go/plugin"
+	"magma/orc8r/cloud/go/services/service_registry"
 	"magma/orc8r/cloud/go/services/state"
 	indexer_protos "magma/orc8r/cloud/go/services/state/protos"
-	"magma/orc8r/lib/go/registry"
 
 	"github.com/spf13/cobra"
 )
@@ -59,11 +59,11 @@ func globalPre(cmd *cobra.Command, args []string) {
 		defer log.SetOutput(os.Stderr)
 	}
 	plugin.LoadAllPluginsFatalOnError(&plugin.DefaultOrchestratorPluginLoader{})
-	registry.MustPopulateServices()
+	service_registry.MustPopulateServices()
 }
 
 func getClient() indexer_protos.IndexerManagerClient {
-	conn, err := registry.GetConnection(state.ServiceName)
+	conn, err := service_registry.GetConnection(state.ServiceName)
 	if err != nil {
 		log.Fatal(err)
 	}

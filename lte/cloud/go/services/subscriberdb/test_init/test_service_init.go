@@ -16,6 +16,8 @@ package test_init
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"magma/lte/cloud/go/lte"
 	"magma/lte/cloud/go/services/subscriberdb"
 	"magma/lte/cloud/go/services/subscriberdb/protos"
@@ -23,11 +25,9 @@ import (
 	"magma/lte/cloud/go/services/subscriberdb/storage"
 	"magma/orc8r/cloud/go/blobstore"
 	"magma/orc8r/cloud/go/orc8r"
+	"magma/orc8r/cloud/go/service/test"
 	state_protos "magma/orc8r/cloud/go/services/state/protos"
 	"magma/orc8r/cloud/go/sqorc"
-	"magma/orc8r/cloud/go/test_utils"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func StartTestService(t *testing.T) {
@@ -39,7 +39,7 @@ func StartTestService(t *testing.T) {
 		orc8r.StateIndexerVersionAnnotation: "1",
 		orc8r.StateIndexerTypesAnnotation:   lte.MobilitydStateType,
 	}
-	srv, lis := test_utils.NewTestOrchestratorService(t, orc8r.ModuleName, subscriberdb.ServiceName, labels, annotations)
+	srv, lis := test.NewOrchestratorService(t, orc8r.ModuleName, subscriberdb.ServiceName, labels, annotations)
 
 	// Init storage
 	db, err := sqorc.Open("sqlite3", ":memory:")
@@ -54,5 +54,5 @@ func StartTestService(t *testing.T) {
 	state_protos.RegisterIndexerServer(srv.GrpcServer, servicers.NewIndexerServicer())
 
 	// Run service
-	go srv.RunTest(lis)
+	go srv.RunTest(t, lis)
 }

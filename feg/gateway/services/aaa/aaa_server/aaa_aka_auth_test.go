@@ -33,7 +33,7 @@ import (
 	"magma/feg/gateway/services/eap/providers/aka/servicers"
 	_ "magma/feg/gateway/services/eap/providers/aka/servicers/handlers"
 	eap_test "magma/feg/gateway/services/eap/test"
-	"magma/orc8r/cloud/go/test_utils"
+	"magma/orc8r/cloud/go/service"
 )
 
 // Test AAA EAP Service
@@ -80,12 +80,12 @@ func (c testEapServiceClient) HandleIdentity(in *protos.EapIdentity) (*protos.Ea
 // TestEapAkaConcurent tests EAP AKA Provider
 func TestEapAkaConcurent(t *testing.T) {
 	os.Setenv("USE_REMOTE_SWX_PROXY", "false")
-	srv, lis := test_utils.NewTestService(t, registry.ModuleName, registry.SWX_PROXY)
+	srv, lis := service.NewTestService(t, registry.ModuleName, registry.SWX_PROXY)
 	var service eap_test.SwxProxy
 	cp.RegisterSwxProxyServer(srv.GrpcServer, service)
-	go srv.RunTest(lis)
+	go srv.MustRunTest(t, lis)
 
-	eapSrv, eapLis := test_utils.NewTestService(t, registry.ModuleName, registry.EAP_AKA)
+	eapSrv, eapLis := service.NewTestService(t, registry.ModuleName, registry.EAP_AKA)
 	servicer, err := servicers.NewEapAkaService(&mconfig.EapAkaConfig{
 		Timeout: &mconfig.EapAkaConfig_Timeouts{
 			ChallengeMs:            700,
@@ -98,11 +98,11 @@ func TestEapAkaConcurent(t *testing.T) {
 		return
 	}
 	eapp.RegisterEapServiceServer(eapSrv.GrpcServer, servicer)
-	go eapSrv.RunTest(eapLis)
+	go eapSrv.MustRunTest(t, eapLis)
 
-	rtrSrv, rtrLis := test_utils.NewTestService(t, registry.ModuleName, registry.AAA_SERVER)
+	rtrSrv, rtrLis := service.NewTestService(t, registry.ModuleName, registry.AAA_SERVER)
 	protos.RegisterAuthenticatorServer(rtrSrv.GrpcServer, &testAuthenticator{supportedMethods: eap_client.SupportedTypes()})
-	go rtrSrv.RunTest(rtrLis)
+	go rtrSrv.MustRunTest(t, rtrLis)
 
 	client := &testEapServiceClient{}
 	done := make(chan error)
@@ -122,18 +122,18 @@ func TestEAPPeerNak(t *testing.T) {
 	akaPrimeNak := []byte{0x02, 237, 0x00, 0x06, 0x03, 50}
 	akaAkaPrimeNak := []byte{0x02, 236, 0x00, 0x07, 0x03, 50, 23}
 
-	eapSrv, eapLis := test_utils.NewTestService(t, registry.ModuleName, registry.EAP_AKA)
+	eapSrv, eapLis := service.NewTestService(t, registry.ModuleName, registry.EAP_AKA)
 	servicer, err := servicers.NewEapAkaService(nil)
 	if err != nil {
 		t.Fatalf("failed to create EAP AKA Service: %v", err)
 		return
 	}
 	eapp.RegisterEapServiceServer(eapSrv.GrpcServer, servicer)
-	go eapSrv.RunTest(eapLis)
+	go eapSrv.MustRunTest(t, eapLis)
 
-	rtrSrv, rtrLis := test_utils.NewTestService(t, registry.ModuleName, registry.AAA_SERVER)
+	rtrSrv, rtrLis := service.NewTestService(t, registry.ModuleName, registry.AAA_SERVER)
 	protos.RegisterAuthenticatorServer(rtrSrv.GrpcServer, &testAuthenticator{supportedMethods: eap_client.SupportedTypes()})
-	go rtrSrv.RunTest(rtrLis)
+	go rtrSrv.MustRunTest(t, rtrLis)
 
 	eapCtx := &protos.Context{SessionId: eap.CreateSessionId()}
 
@@ -162,23 +162,23 @@ func TestEAPPeerNak(t *testing.T) {
 
 func TestEAPAkaWrongPlmnId(t *testing.T) {
 	os.Setenv("USE_REMOTE_SWX_PROXY", "false")
-	srv, lis := test_utils.NewTestService(t, registry.ModuleName, registry.SWX_PROXY)
+	srv, lis := service.NewTestService(t, registry.ModuleName, registry.SWX_PROXY)
 	var service eap_test.NoUseSwxProxy
 	cp.RegisterSwxProxyServer(srv.GrpcServer, service)
-	go srv.RunTest(lis)
+	go srv.MustRunTest(t, lis)
 
-	eapSrv, eapLis := test_utils.NewTestService(t, registry.ModuleName, registry.EAP_AKA)
+	eapSrv, eapLis := service.NewTestService(t, registry.ModuleName, registry.EAP_AKA)
 	servicer, err := servicers.NewEapAkaService(&mconfig.EapAkaConfig{PlmnIds: []string{wrongPlmnID6}})
 	if err != nil {
 		t.Fatalf("failed to create EAP AKA Service: %v", err)
 		return
 	}
 	eapp.RegisterEapServiceServer(eapSrv.GrpcServer, servicer)
-	go eapSrv.RunTest(eapLis)
+	go eapSrv.MustRunTest(t, eapLis)
 
-	rtrSrv, rtrLis := test_utils.NewTestService(t, registry.ModuleName, registry.AAA_SERVER)
+	rtrSrv, rtrLis := service.NewTestService(t, registry.ModuleName, registry.AAA_SERVER)
 	protos.RegisterAuthenticatorServer(rtrSrv.GrpcServer, &testAuthenticator{supportedMethods: eap_client.SupportedTypes()})
-	go rtrSrv.RunTest(rtrLis)
+	go rtrSrv.MustRunTest(t, rtrLis)
 
 	tst := eap_test.Units[eap_test.IMSI1]
 	eapCtx := &protos.Context{SessionId: eap.CreateSessionId()}
@@ -196,12 +196,12 @@ func TestEAPAkaWrongPlmnId(t *testing.T) {
 
 func TestEAPAkaPlmnId5(t *testing.T) {
 	os.Setenv("USE_REMOTE_SWX_PROXY", "false")
-	srv, lis := test_utils.NewTestService(t, registry.ModuleName, registry.SWX_PROXY)
+	srv, lis := service.NewTestService(t, registry.ModuleName, registry.SWX_PROXY)
 	var service eap_test.SwxProxy
 	cp.RegisterSwxProxyServer(srv.GrpcServer, service)
-	go srv.RunTest(lis)
+	go srv.MustRunTest(t, lis)
 
-	eapSrv, eapLis := test_utils.NewTestService(t, registry.ModuleName, registry.EAP_AKA)
+	eapSrv, eapLis := service.NewTestService(t, registry.ModuleName, registry.EAP_AKA)
 	servicer, err := servicers.NewEapAkaService(&mconfig.EapAkaConfig{PlmnIds: []string{wrongPlmnID6, plmnID5}})
 	if err != nil {
 		t.Fatalf("failed to create EAP AKA Service: %v", err)
@@ -210,11 +210,11 @@ func TestEAPAkaPlmnId5(t *testing.T) {
 
 	servicer.SetChallengeTimeout(time.Millisecond * 10)
 	eapp.RegisterEapServiceServer(eapSrv.GrpcServer, servicer)
-	go eapSrv.RunTest(eapLis)
+	go eapSrv.MustRunTest(t, eapLis)
 
-	rtrSrv, rtrLis := test_utils.NewTestService(t, registry.ModuleName, registry.AAA_SERVER)
+	rtrSrv, rtrLis := service.NewTestService(t, registry.ModuleName, registry.AAA_SERVER)
 	protos.RegisterAuthenticatorServer(rtrSrv.GrpcServer, &testAuthenticator{supportedMethods: eap_client.SupportedTypes()})
-	go rtrSrv.RunTest(rtrLis)
+	go rtrSrv.MustRunTest(t, rtrLis)
 
 	tst := eap_test.Units[eap_test.IMSI1]
 	eapCtx := &protos.Context{SessionId: eap.CreateSessionId()}
@@ -231,12 +231,12 @@ func TestEAPAkaPlmnId5(t *testing.T) {
 
 func TestEAPAkaPlmnId6(t *testing.T) {
 	os.Setenv("USE_REMOTE_SWX_PROXY", "false")
-	srv, lis := test_utils.NewTestService(t, registry.ModuleName, registry.SWX_PROXY)
+	srv, lis := service.NewTestService(t, registry.ModuleName, registry.SWX_PROXY)
 	var service eap_test.SwxProxy
 	cp.RegisterSwxProxyServer(srv.GrpcServer, service)
-	go srv.RunTest(lis)
+	go srv.MustRunTest(t, lis)
 
-	eapSrv, eapLis := test_utils.NewTestService(t, registry.ModuleName, registry.EAP_AKA)
+	eapSrv, eapLis := service.NewTestService(t, registry.ModuleName, registry.EAP_AKA)
 	servicer, err := servicers.NewEapAkaService(&mconfig.EapAkaConfig{PlmnIds: []string{wrongPlmnID6, plmnID6}})
 	if err != nil {
 		t.Fatalf("failed to create EAP AKA Service: %v", err)
@@ -244,11 +244,11 @@ func TestEAPAkaPlmnId6(t *testing.T) {
 	}
 	servicer.SetChallengeTimeout(time.Millisecond * 10)
 	eapp.RegisterEapServiceServer(eapSrv.GrpcServer, servicer)
-	go eapSrv.RunTest(eapLis)
+	go eapSrv.MustRunTest(t, eapLis)
 
-	rtrSrv, rtrLis := test_utils.NewTestService(t, registry.ModuleName, registry.AAA_SERVER)
+	rtrSrv, rtrLis := service.NewTestService(t, registry.ModuleName, registry.AAA_SERVER)
 	protos.RegisterAuthenticatorServer(rtrSrv.GrpcServer, &testAuthenticator{supportedMethods: eap_client.SupportedTypes()})
-	go rtrSrv.RunTest(rtrLis)
+	go rtrSrv.MustRunTest(t, rtrLis)
 
 	tst := eap_test.Units[eap_test.IMSI1]
 	eapCtx := &protos.Context{SessionId: eap.CreateSessionId()}

@@ -8,14 +8,14 @@ import (
 	"strconv"
 	"strings"
 
-	"magma/fbinternal/cloud/go/services/download"
-	"magma/orc8r/lib/go/registry"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/golang/glog"
 	"golang.org/x/net/http2"
+
+	"magma/fbinternal/cloud/go/services/download"
+	"magma/orc8r/cloud/go/services/service_registry"
 )
 
 const (
@@ -24,7 +24,7 @@ const (
 )
 
 func RootHandler(config DownloadServiceConfig) http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		glog.V(2).Infof("Download svc called with '%s'", r.URL.Path)
 
 		if !(strings.HasPrefix(r.URL.Path, s3Prefix)) {
@@ -48,7 +48,7 @@ func RootHandler(config DownloadServiceConfig) http.HandlerFunc {
 		}
 
 		s3Handler(w, appConfig, imageName, r.Header.Get("Range"))
-	})
+	}
 }
 
 func s3Handler(
@@ -102,7 +102,7 @@ func s3Handler(
 func Run() {
 	config := InitServiceConfig()
 
-	port, err := registry.GetServicePort(download.ServiceName)
+	port, err := service_registry.GetPort(download.ServiceName)
 	if err != nil {
 		glog.Fatalf("Unable to determine port to run download service: %s", err)
 	}
@@ -112,7 +112,7 @@ func Run() {
 	// All attempts to run a go-based server that supported both http/1.x and http2,
 	// without requiring SSL, failed.
 	server := http2.Server{}
-	// Listen doesnt't bind to both ipv4 and ipv6 right now
+	// Listen doesn't bind to both ipv4 and ipv6 right now
 	// See https://github.com/golang/go/issues/9334
 	tcpListener, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {

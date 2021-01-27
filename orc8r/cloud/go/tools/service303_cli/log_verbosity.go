@@ -19,10 +19,10 @@ import (
 	"os"
 	"strconv"
 
+	"magma/orc8r/cloud/go/service/service303"
 	"magma/orc8r/cloud/go/services/dispatcher/gateway_registry"
-	"magma/orc8r/cloud/go/services/dispatcher/gw_client_apis/service303"
+	gw_service303 "magma/orc8r/cloud/go/services/dispatcher/gw_client_apis/service303"
 	"magma/orc8r/lib/go/protos"
-	"magma/orc8r/lib/go/service/client"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
@@ -85,8 +85,8 @@ func setLogVerbosity(service string, verbosity int) error {
 
 func setLogVerbosityOrGwLogVerbosity(service string, verbosity int) error {
 	if isGatewayServiceQuery {
-		return service303.GWService303SetLogVerbosity(gateway_registry.GwServiceType(service), hardwareID, &protos.LogVerbosity{Verbosity: int32(verbosity)})
+		return gw_service303.GWService303SetLogVerbosity(gateway_registry.GwServiceType(service), hardwareID, &protos.LogVerbosity{Verbosity: int32(verbosity)})
 	} else {
-		return client.Service303SetLogVerbosity(service, &protos.LogVerbosity{Verbosity: int32(verbosity)})
+		return service303.SetLogVerbosity(service, &protos.LogVerbosity{Verbosity: int32(verbosity)})
 	}
 }

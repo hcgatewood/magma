@@ -18,10 +18,10 @@ import (
 	"fmt"
 	"os"
 
+	"magma/orc8r/cloud/go/service/service303"
 	"magma/orc8r/cloud/go/services/dispatcher/gateway_registry"
-	"magma/orc8r/cloud/go/services/dispatcher/gw_client_apis/service303"
+	gw_service303 "magma/orc8r/cloud/go/services/dispatcher/gw_client_apis/service303"
 	"magma/orc8r/lib/go/protos"
-	"magma/orc8r/lib/go/service/client"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
@@ -85,8 +85,8 @@ func getMetrics(service string) error {
 
 func getMetricsOrGwMetrics(service string) (*protos.MetricsContainer, error) {
 	if isGatewayServiceQuery {
-		return service303.GWService303GetMetrics(gateway_registry.GwServiceType(service), hardwareID)
+		return gw_service303.GWService303GetMetrics(gateway_registry.GwServiceType(service), hardwareID)
 	} else {
-		return client.Service303GetMetrics(service)
+		return service303.GetMetrics(service)
 	}
 }

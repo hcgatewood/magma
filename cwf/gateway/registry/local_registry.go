@@ -31,7 +31,7 @@ const (
 // Add a new service.
 // If the service already exists, overwrites the service config.
 func AddService(serviceType, host string, port int) {
-	platform_registry.AddService(platform_registry.ServiceLocation{Name: serviceType, Host: host, Port: port})
+	platform_registry.AddServices(platform_registry.ServiceLocation{Name: serviceType, Host: host, Port: port})
 }
 
 // Returns the RPC address of the service.

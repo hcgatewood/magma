@@ -22,11 +22,11 @@ import (
 	"magma/feg/gateway/services/s6a_proxy/servicers"
 	"magma/feg/gateway/services/s6a_proxy/servicers/test"
 	"magma/gateway/mconfig"
-	"magma/orc8r/cloud/go/test_utils"
+	service2 "magma/orc8r/cloud/go/service"
 )
 
 func StartTestService(t *testing.T, diamServerNetworkProtocol, diamServerAddress string) error {
-	srv, lis := test_utils.NewTestService(t, registry.ModuleName, registry.S6A_PROXY)
+	srv, lis := service2.NewTestService(t, registry.ModuleName, registry.S6A_PROXY)
 
 	// Create tmp mconfig test file & load configs from it
 	fegConfigFmt := `{
@@ -99,6 +99,6 @@ func StartTestService(t *testing.T, diamServerNetworkProtocol, diamServerAddress
 
 	protos.RegisterS6AProxyServer(srv.GrpcServer, service)
 	protos.RegisterServiceHealthServer(srv.GrpcServer, service)
-	go srv.RunTest(lis)
+	go srv.MustRunTest(t, lis)
 	return nil
 }
