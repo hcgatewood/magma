@@ -1,5 +1,4 @@
 ---
-#
 # Copyright 2020 The Magma Authors.
 
 # This source code is licensed under the BSD-style license found in the
@@ -11,8 +10,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-reconnect_sec: 180
-
-# Timeout for individual streams. Revisit the time value when
-# implementing a push channel over streamer.
-stream_timeout: 150
+maxGRPCMessageSizeMB: 50

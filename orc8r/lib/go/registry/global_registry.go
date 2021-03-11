@@ -34,6 +34,10 @@ func Get() *ServiceRegistry {
 	return globalRegistry
 }
 
+func Set(registry *ServiceRegistry) {
+	globalRegistry = registry
+}
+
 // PopulateServices populates the service registry based on the per-module
 // config files at /etc/magma/configs/MODULE_NAME/service_registry.yml.
 func PopulateServices() error {

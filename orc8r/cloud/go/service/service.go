@@ -22,13 +22,16 @@ import (
 	"fmt"
 	"net"
 
+	"magma/orc8r/cloud/go/orc8r"
 	"magma/orc8r/cloud/go/service/middleware/unary"
 	"magma/orc8r/lib/go/protos"
 	"magma/orc8r/lib/go/registry"
 	platform_service "magma/orc8r/lib/go/service"
+	"magma/orc8r/lib/go/service/config"
 
 	"github.com/golang/glog"
 	"github.com/labstack/echo"
+	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 )
 
@@ -61,6 +64,7 @@ type OrchestratorService struct {
 // interceptor to perform identity check. If your service does not or can not
 // perform identity checks, (e.g., federation), use NewServiceWithOptions.
 func NewOrchestratorService(moduleName string, serviceName string, serverOptions ...grpc.ServerOption) (*OrchestratorService, error) {
+	// todo hcg fix where callers are adding their own default msg size
 	flag.Parse()
 
 	err := registry.PopulateServices()
@@ -68,7 +72,15 @@ func NewOrchestratorService(moduleName string, serviceName string, serverOptions
 		return nil, err
 	}
 
+	sharedConfig, err := getSharedConfig()
+	if err != nil {
+		return nil, err
+	}
+	maxGRPCMsgSize := sharedConfig.MaxGRPCMessageSizeMB * 1024 * 1024
+
 	serverOptions = append(serverOptions, grpc.UnaryInterceptor(unary.MiddlewareHandler))
+	// Set max gRPC message size to receive when acting as the server
+	serverOptions = append(serverOptions, grpc.MaxRecvMsgSize(maxGRPCMsgSize))
 	platformService, err := platform_service.NewServiceWithOptionsImpl(moduleName, serviceName, serverOptions...)
 	if err != nil {
 		return nil, err
@@ -78,6 +90,10 @@ func NewOrchestratorService(moduleName string, serviceName string, serverOptions
 	if err != nil {
 		return nil, err
 	}
+
+	// Set max gRPC message size to receive when acting as the client
+	opts := grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxGRPCMsgSize))
+	registry.Set(registry.NewWithDialOpts(opts))
 
 	return &OrchestratorService{Service: platformService, EchoServer: echoSrv}, nil
 }
@@ -146,4 +162,34 @@ func getEchoServerForOrchestratorService(serviceName string) (*echo.Echo, error)
 	e.Server.Addr = portStr
 	e.HideBanner = true
 	return e, nil
+}
+
+type Config struct {
+	// MaxGRPCMessageSizeMB is the maximum message size, in megabytes, allowed
+	// by this service's gRPC servicer.
+	//
+	// Defaults:
+	// - Server receive max: 4mb
+	// - Server send max: 1gb
+	// - Client receive max:  4mb
+	// - Client send max:  1gb
+	//
+	// For simplicity, this config sets the receive max for both server and
+	// client, leaving the send max unchanged.
+	MaxGRPCMessageSizeMB int
+}
+
+func getSharedConfig() (*Config, error) {
+	c := &Config{}
+
+	_, _, err := config.GetStructuredServiceConfig(orc8r.ModuleName, orc8r.SharedService, c)
+	if err != nil {
+		return nil, err
+	}
+
+	if c.MaxGRPCMessageSizeMB == 0 {
+		return nil, errors.New("parsed shared.yml and didn't find a max gRPC message size")
+	}
+
+	return c, nil
 }
